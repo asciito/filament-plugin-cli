@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command;
@@ -12,7 +13,7 @@ use function Illuminate\Filesystem\join_paths;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
-class InitPackage extends Command
+class InitPackage extends Command implements PromptsForMissingInput
 {
     protected $signature = 'init:plugin
                             { vendor : The vendor\'s name (vendor-name) }
@@ -194,5 +195,31 @@ class InitPackage extends Command
         }, 'Deleting CLI');
 
         return $status;
+    }
+
+    protected function vendorPrompt(): string
+    {
+        return text(
+            label: 'Vendor',
+            placeholder: 'vendor-name',
+            required: true,
+        );
+    }
+
+    protected function packagePrompt(): string
+    {
+        return text(
+            label: 'Package',
+            placeholder: 'package-name',
+            required: true,
+        );
+    }
+
+    public function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'vendor' => fn () => $this->vendorPrompt(),
+            'package' => fn () => $this->packagePrompt(),
+        ];
     }
 }
