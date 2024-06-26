@@ -10,6 +10,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 use function Illuminate\Filesystem\join_paths;
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -32,6 +33,9 @@ class InitPackage extends Command implements PromptsForMissingInput
         'vendor',
         'node_modules',
     ];
+
+    // Pattern from: https://regex101.com/library/tQ0bN5
+    protected string $validationRuleForPromptValue = '/^(?!-)((?:[a-z0-9]+-?)+)(?<!-)$/';
 
     public function handle(): int
     {
@@ -109,12 +113,12 @@ class InitPackage extends Command implements PromptsForMissingInput
 
     public function getVendor(): string
     {
-        return Str::slug($this->argument('vendor'));
+        return $this->argument('vendor');
     }
 
     public function getPackage(): string
     {
-        return Str::slug($this->argument('package'));
+        return $this->argument('package');
     }
 
     public function getVendorReplacer(): string
@@ -199,20 +203,46 @@ class InitPackage extends Command implements PromptsForMissingInput
 
     protected function vendorPrompt(): string
     {
-        return text(
+        $vendor = Str::slug(text(
             label: 'Vendor',
             placeholder: 'vendor-name',
             required: true,
-        );
+            validate: function (string $value) {
+                if (Str::isMatch($this->getValidationRuleForPromptValue(), $value)) {
+                    return null;
+                }
+
+                return 'Follow the pattern `vendor-name`';
+            },
+        ));
+
+        if (! confirm("Do you want to use the vendor name [$vendor]")) {
+            return $this->vendorPrompt();
+        }
+
+        return $vendor;
     }
 
     protected function packagePrompt(): string
     {
-        return text(
+        $package = Str::slug(text(
             label: 'Package',
             placeholder: 'package-name',
             required: true,
-        );
+            validate: function (string $value) {
+                if (Str::isMatch($this->getValidationRuleForPromptValue(), $value)) {
+                    return null;
+                }
+
+                return 'Follow the pattern `package-name`';
+            },
+        ));
+
+        if (! confirm("Do you want to use the package name [$package]")) {
+            return $this->packagePrompt();
+        }
+
+        return $package;
     }
 
     public function promptForMissingArgumentsUsing(): array
@@ -221,5 +251,10 @@ class InitPackage extends Command implements PromptsForMissingInput
             'vendor' => fn () => $this->vendorPrompt(),
             'package' => fn () => $this->packagePrompt(),
         ];
+    }
+
+    protected function getValidationRuleForPromptValue(): string
+    {
+        return $this->validationRuleForPromptValue;
     }
 }
