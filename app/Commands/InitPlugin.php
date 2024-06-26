@@ -14,7 +14,7 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
-class InitPackage extends Command implements PromptsForMissingInput
+class InitPlugin extends Command implements PromptsForMissingInput
 {
     protected $signature = 'init:plugin
                             { vendor : The vendor\'s name (vendor-name) }
