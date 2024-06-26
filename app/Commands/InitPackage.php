@@ -63,7 +63,11 @@ class InitPackage extends Command
     public function replaceValuesInFile(SplFileInfo $file): void
     {
         spin(
-            fn () => File::replaceInFile($this->getReplacers(), $this->getReplacersValues(), $file),
+            function () use ($file) {
+                usleep(500_000);
+
+                File::replaceInFile($this->getReplacers(), $this->getReplacersValues(), $file);
+            },
             'Replacing values in file '.$file->getBasename(),
         );
 
@@ -183,6 +187,8 @@ class InitPackage extends Command
             if (empty($file)) {
                 return false;
             }
+
+            usleep(1_000_000);
 
             return unlink($file);
         }, 'Deleting CLI');
