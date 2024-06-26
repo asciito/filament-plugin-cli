@@ -214,6 +214,7 @@ class InitPlugin extends Command implements PromptsForMissingInput
 
                 return 'Follow the pattern `vendor-name`';
             },
+            hint: 'Please provide a valid name like [some-vendor-name]'
         );
 
         if (! confirm("Do you want to use the vendor name [$vendor]")) {
@@ -236,6 +237,7 @@ class InitPlugin extends Command implements PromptsForMissingInput
 
                 return 'Follow the pattern `package-name`';
             },
+            hint: 'Please provide a valid name like [some-package-name]'
         );
 
         if (! confirm("Do you want to use the package name [$package]")) {
