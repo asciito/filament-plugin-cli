@@ -113,12 +113,12 @@ class InitPlugin extends Command implements PromptsForMissingInput
 
     public function getVendor(): string
     {
-        return $this->argument('vendor');
+        return Str::slug($this->argument('vendor'));
     }
 
     public function getPackage(): string
     {
-        return $this->argument('package');
+        return Str::slug($this->argument('package'));
     }
 
     public function getVendorReplacer(): string
@@ -203,7 +203,7 @@ class InitPlugin extends Command implements PromptsForMissingInput
 
     protected function vendorPrompt(): string
     {
-        $vendor = Str::slug(text(
+        $vendor = text(
             label: 'Vendor',
             placeholder: 'vendor-name',
             required: true,
@@ -214,7 +214,7 @@ class InitPlugin extends Command implements PromptsForMissingInput
 
                 return 'Follow the pattern `vendor-name`';
             },
-        ));
+        );
 
         if (! confirm("Do you want to use the vendor name [$vendor]")) {
             return $this->vendorPrompt();
@@ -225,7 +225,7 @@ class InitPlugin extends Command implements PromptsForMissingInput
 
     protected function packagePrompt(): string
     {
-        $package = Str::slug(text(
+        $package = text(
             label: 'Package',
             placeholder: 'package-name',
             required: true,
@@ -236,7 +236,7 @@ class InitPlugin extends Command implements PromptsForMissingInput
 
                 return 'Follow the pattern `package-name`';
             },
-        ));
+        );
 
         if (! confirm("Do you want to use the package name [$package]")) {
             return $this->packagePrompt();
