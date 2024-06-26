@@ -109,12 +109,12 @@ class InitPackage extends Command implements PromptsForMissingInput
 
     public function getVendor(): string
     {
-        return $this->argument('vendor');
+        return Str::slug($this->argument('vendor'));
     }
 
     public function getPackage(): string
     {
-        return $this->argument('package');
+        return Str::slug($this->argument('package'));
     }
 
     public function getVendorReplacer(): string
@@ -162,21 +162,21 @@ class InitPackage extends Command implements PromptsForMissingInput
 
     public function getVendorReplacersValues(): array
     {
-        $vendor = Str::of($this->getVendor())->slug();
+        $vendor = $this->getVendor();
 
         return [
-            $vendor->toString(),
-            $vendor->studly()->toString(),
+            $vendor,
+            Str::studly($vendor),
         ];
     }
 
     public function getPackageReplacersValues(): array
     {
-        $package = Str::of($this->getPackage())->slug();
+        $package = $this->getPackage();
 
         return [
-            $package->toString(),
-            $package->studly()->toString(),
+            $package,
+            Str::studly($package),
         ];
     }
 
