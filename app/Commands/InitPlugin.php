@@ -18,7 +18,8 @@ class InitPlugin extends Command implements PromptsForMissingInput
 {
     protected $signature = 'init:plugin
                             { vendor : The vendor\'s name (vendor-name) }
-                            { package : The package\'s name (package-name) }';
+                            { package : The package\'s name (package-name) }
+                            { --d|dont-delete-cli : Prevent deleting the CLI }';
 
     protected $description = 'Initialize the plugin development package';
 
@@ -45,7 +46,7 @@ class InitPlugin extends Command implements PromptsForMissingInput
             $this->replaceValuesInFile($file);
         }
 
-        if (! $this->deleteCli()) {
+        if (!   $this->option('dont-delete-cli') && ! $this->deleteCli()) {
             $this->error('The CLI could not be deleted');
 
             return self::FAILURE;
