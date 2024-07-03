@@ -46,7 +46,7 @@ class InitPlugin extends Command implements PromptsForMissingInput
             $this->replaceValuesInFile($file);
         }
 
-        if (!   $this->option('dont-delete-cli') && ! $this->deleteCli()) {
+        if (! $this->option('dont-delete-cli') && ! $this->deleteCli()) {
             $this->error('The CLI could not be deleted');
 
             return self::FAILURE;
