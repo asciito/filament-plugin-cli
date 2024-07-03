@@ -14,9 +14,9 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
-class InitPlugin extends Command implements PromptsForMissingInput
+class InitPluginCommand extends Command implements PromptsForMissingInput
 {
-    protected $signature = 'init:plugin
+    protected $signature = 'init
                             { vendor : The vendor\'s name (vendor-name) }
                             { package : The package\'s name (package-name) }
                             { --d|dont-delete-cli : Prevent deleting the CLI }';
