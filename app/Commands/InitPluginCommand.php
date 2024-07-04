@@ -179,44 +179,53 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
     protected function vendorPrompt(): string
     {
-        do {
-            $vendor = $this->ask('Vendor');
+        return $this->askAndRepeat(
+            'Vendor',
+            fn (string $value) => ! $this->confirm("Do you want to use the vendor name [$value]"),
+            function (string $value) {
+                if (! Str::isMatch($this->getValidationRuleForPromptValue(), $value)) {
+                    return 'please provide a valid name like [some-vendor-name]';
+                }
 
-            if (! $vendor && Str::isMatch($this->getValidationRuleForPromptValue(), $vendor)) {
-                $this->error('Please provide a valid name like [some-vendor-name]');
-
-                continue;
+                return true;
             }
-
-            break;
-        } while (true);
-
-        if (! $this->confirm("Do you want to use the vendor name [$vendor]")) {
-            return $this->vendorPrompt();
-        }
-
-        return $vendor;
+        );
     }
 
     protected function packagePrompt(): string
     {
-        do {
-            $package = $this->ask('Package');
+        return $this->askAndRepeat(
+            'Package',
+            fn (string $value) => ! $this->confirm("Do you want to use the package name [$value]"),
+            function (string $value) {
+                if (! Str::isMatch($this->getValidationRuleForPromptValue(), $value)) {
+                    return 'please provide a valid name like [some-package-name]';
+                }
 
-            if (! $package && Str::isMatch($this->getValidationRuleForPromptValue(), $package)) {
-                $this->error('Please provide a valid name like [some-package-name]');
-
-                continue;
+                return true;
             }
+        );
+    }
 
-            break;
+    public function askAndRepeat(string $question, \Closure | null $shouldRepeat = null, \Closure | null $validate = null): string
+    {
+        do {
+            $value = $this->ask($question);
+
+            if ($value && $validate instanceof \Closure && $valid = $validate($value)) {
+                if (! is_string($valid)) {
+                    break;
+                }
+
+                $this->error($valid);
+            }
         } while (true);
 
-        if (! $this->confirm("Do you want to use the package name [$package]")) {
-            return $this->packagePrompt();
+        if ($shouldRepeat instanceof \Closure && $shouldRepeat($value)) {
+            return $this->askAndRepeat($question, $shouldRepeat, $validate);
         }
 
-        return $package;
+        return $value;
     }
 
     public function promptForMissingArgumentsUsing(): array

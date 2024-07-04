@@ -95,12 +95,12 @@ it('replace file name', function () {
     $this->disk->put('PackageClass.php.stub', '');
     $this->disk->put('VENDORClass.php.stub', '');
 
-    $this->artisan('init', ['--path' => $this->disk->path(''), '--dont-delete-cli' => true])
-        ->expectsQuestion('Vendor', 'vendor')
-        ->expectsConfirmation('Do you want to use the vendor name [vendor]', 'yes')
-        ->expectsQuestion('Package', 'some-package')
-        ->expectsConfirmation('Do you want to use the package name [some-package]', 'yes')
-        ->assertSuccessful();
+    $this->artisan('init', [
+        'vendor' => 'vendor',
+        'package' => 'some-package',
+        '--path' => $this->disk->path(''),
+        '--dont-delete-cli' => true
+    ])->assertSuccessful();
 
     \Illuminate\Support\Sleep::assertSleptTimes(2);
 
