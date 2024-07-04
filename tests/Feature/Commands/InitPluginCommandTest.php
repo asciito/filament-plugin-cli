@@ -35,7 +35,7 @@ it('replace vendor and package in stub file', function () {
     JSON
     );
 
-    $this->disk->put('replacers.txt.stub', <<<TEXT
+    $this->disk->put('replacers.txt.stub', <<<'TEXT'
     {{Vendor}} and {{PACKAGE}}
     {{vendor}} and {{Package}}
 
@@ -79,7 +79,7 @@ it('replace vendor and package in stub file', function () {
         }
         JSON)
         ->and($this->disk->get('replacers.txt'))
-        ->toBe(<<<TEXT
+        ->toBe(<<<'TEXT'
         Vendor and PACKAGE
         vendor and Package
 
