@@ -118,7 +118,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     public function getPackageDirectory(): array
     {
         return [
-            $this->option('path') ?? getcwd(),
+            $this->option('path') ?: getcwd(),
         ];
     }
 
