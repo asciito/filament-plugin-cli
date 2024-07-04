@@ -1,0 +1,32 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        php: [ 8.3, 8.2 ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, dom, fileinfo
+
+      - name: Install Dependencies
+        run: |
+          composer install --prefer-dist --no-interaction
+
+      - name: Run Tests
+        run: |
+          vendor/bin/pest
