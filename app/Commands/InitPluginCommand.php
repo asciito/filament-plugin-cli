@@ -207,7 +207,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         );
     }
 
-    public function askAndRepeat(string $question, \Closure | null $shouldRepeat = null, \Closure | null $validate = null): string
+    public function askAndRepeat(string $question, ?\Closure $shouldRepeat = null, ?\Closure $validate = null): string
     {
         do {
             $value = $this->ask($question);

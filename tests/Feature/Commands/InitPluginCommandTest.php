@@ -99,7 +99,7 @@ it('replace file name', function () {
         'vendor' => 'vendor',
         'package' => 'some-package',
         '--path' => $this->disk->path(''),
-        '--dont-delete-cli' => true
+        '--dont-delete-cli' => true,
     ])->assertSuccessful();
 
     \Illuminate\Support\Sleep::assertSleptTimes(2);
