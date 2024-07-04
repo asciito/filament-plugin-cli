@@ -4,30 +4,35 @@ namespace App\Commands;
 
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 use function Illuminate\Filesystem\join_paths;
-use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\text;
 
 class InitPluginCommand extends Command implements PromptsForMissingInput
 {
     protected $signature = 'init
                             { vendor : The vendor\'s name (vendor-name) }
                             { package : The package\'s name (package-name) }
+                            { --p|path : Path to the plugin directory }
                             { --d|dont-delete-cli : Prevent deleting the CLI }';
 
     protected $description = 'Initialize the plugin development package';
 
-    protected string $fileStubName = '*.stub';
+    protected string $vendorReplacer = 'vendor';
 
-    protected string $vendorReplacer = '{{vendor}}';
+    protected string $packageReplacer = 'package';
 
-    protected string $packageReplacer = '{{package}}';
+    protected string $includedFileExtension = '*.stub';
+
+    protected array $includedFilenames = [
+        'README.md',
+        'LICENSE.md',
+    ];
 
     protected array $excludedDirectories = [
         'build',
@@ -44,6 +49,8 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
         foreach ($files as $file) {
             $this->replaceValuesInFile($file);
+
+            $this->renameFile($file);
         }
 
         if (! $this->option('dont-delete-cli') && ! $this->deleteCli()) {
@@ -59,7 +66,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     {
         $finder = (new Finder)
             ->in($this->getPackageDirectory())
-            ->name($this->getFileStubName())
+            ->name($this->getFilenames())
             ->exclude($this->getExcludedDirectories())
             ->files();
 
@@ -70,14 +77,24 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     {
         spin(
             function () use ($file) {
-                usleep(500_000);
+                $shouldReplace = [];
 
-                File::replaceInFile($this->getReplacers(), $this->getReplacersValues(), $file);
+                foreach ($this->getReplacersAndValues() as $replacer => $value) {
+                    $shouldReplace['{{'.str::studly($replacer).'}}'] = Str::studly($value);
+                    $shouldReplace['{{'.str::upper($replacer).'}}'] = str::upper($value);
+                    $shouldReplace['{{'.$replacer.'}}'] = $value;
+                }
+
+                Sleep::usleep(0.5);
+
+                File::replaceInFile(
+                    search: array_keys($shouldReplace),
+                    replace: array_values($shouldReplace),
+                    path: $file->getRealPath(),
+                );
             },
             'Replacing values in file '.$file->getBasename(),
         );
-
-        $this->renameFile($file);
     }
 
     public function renameFile(SplFileInfo $file): bool
@@ -101,15 +118,18 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     public function getPackageDirectory(): array
     {
         return [
-            getcwd(),
+            $this->option('path') ?? getcwd(),
         ];
     }
 
-    public function getFileStubName(): array
+    public function getFilenames(): array
     {
-        return [
-            $this->fileStubName,
-        ];
+        return array_merge([$this->includedFileExtension], $this->getIncludedFilenames());
+    }
+
+    public function getIncludedFilenames(): array
+    {
+        return $this->includedFilenames;
     }
 
     public function getVendor(): string
@@ -132,56 +152,11 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return $this->packageReplacer;
     }
 
-    public function getReplacers(): array
+    public function getReplacersAndValues(): array
     {
         return [
-            ...$this->getVendorReplacers(),
-            ...$this->getPackageReplacers(),
-        ];
-    }
-
-    public function getVendorReplacers(): array
-    {
-        return [
-            Str::lower($this->getVendorReplacer()),
-            Str::upper($this->getVendorReplacer()),
-        ];
-    }
-
-    public function getPackageReplacers(): array
-    {
-        return [
-            Str::lower($this->getPackageReplacer()),
-            Str::upper($this->getPackageReplacer()),
-        ];
-    }
-
-    public function getReplacersValues(): array
-    {
-        return [
-            ...$this->getVendorReplacersValues(),
-            ...$this->getPackageReplacersValues(),
-        ];
-    }
-
-
-    public function getVendorReplacersValues(): array
-    {
-        $vendor = $this->getVendor();
-
-        return [
-            $vendor,
-            Str::studly($vendor),
-        ];
-    }
-
-    public function getPackageReplacersValues(): array
-    {
-        $package = $this->getPackage();
-
-        return [
-            $package,
-            Str::studly($package),
+            $this->getVendorReplacer() => $this->getVendor(),
+            $this->getPackageReplacer() => $this->getPackage(),
         ];
     }
 
@@ -194,7 +169,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
                 return false;
             }
 
-            usleep(1_000_000);
+            Sleep::sleep(1);
 
             return unlink($file);
         }, 'Deleting CLI');
@@ -204,21 +179,19 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
     protected function vendorPrompt(): string
     {
-        $vendor = text(
-            label: 'Vendor',
-            placeholder: 'vendor-name',
-            required: true,
-            validate: function (string $value) {
-                if (Str::isMatch($this->getValidationRuleForPromptValue(), $value)) {
-                    return null;
-                }
+        do {
+            $vendor = $this->ask('Vendor');
 
-                return 'Follow the pattern `vendor-name`';
-            },
-            hint: 'Please provide a valid name like [some-vendor-name]'
-        );
+            if (! $vendor && Str::isMatch($this->getValidationRuleForPromptValue(), $vendor)) {
+                $this->error('Please provide a valid name like [some-vendor-name]');
 
-        if (! confirm("Do you want to use the vendor name [$vendor]")) {
+                continue;
+            }
+
+            break;
+        } while (true);
+
+        if (! $this->confirm("Do you want to use the vendor name [$vendor]")) {
             return $this->vendorPrompt();
         }
 
@@ -227,21 +200,19 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
     protected function packagePrompt(): string
     {
-        $package = text(
-            label: 'Package',
-            placeholder: 'package-name',
-            required: true,
-            validate: function (string $value) {
-                if (Str::isMatch($this->getValidationRuleForPromptValue(), $value)) {
-                    return null;
-                }
+        do {
+            $package = $this->ask('Package');
 
-                return 'Follow the pattern `package-name`';
-            },
-            hint: 'Please provide a valid name like [some-package-name]'
-        );
+            if (! $package && Str::isMatch($this->getValidationRuleForPromptValue(), $package)) {
+                $this->error('Please provide a valid name like [some-package-name]');
 
-        if (! confirm("Do you want to use the package name [$package]")) {
+                continue;
+            }
+
+            break;
+        } while (true);
+
+        if (! $this->confirm("Do you want to use the package name [$package]")) {
             return $this->packagePrompt();
         }
 
