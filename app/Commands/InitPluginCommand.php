@@ -66,7 +66,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return self::SUCCESS;
     }
 
-    public function getFiles(): Finder
+    protected function getFiles(): Finder
     {
         $finder = (new Finder)
             ->in($this->getPackageDirectory())
@@ -77,7 +77,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return $finder;
     }
 
-    public function replaceValuesInFile(SplFileInfo $file): void
+    protected function replaceValuesInFile(SplFileInfo $file): void
     {
         spin(
             function () use ($file) {
@@ -91,7 +91,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         );
     }
 
-    public function renameFile(SplFileInfo $file): bool
+    protected function renameFile(SplFileInfo $file): bool
     {
         $path = $file->getPath();
         $filename = $file->getBasename('.stub');
@@ -125,44 +125,44 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return $this->excludedDirectories;
     }
 
-    public function getPackageDirectory(): array
+    protected function getPackageDirectory(): array
     {
         return [
             $this->option('path') ?: getcwd(),
         ];
     }
 
-    public function getFilenames(): array
+    protected function getFilenames(): array
     {
         return array_merge([$this->includedFileExtension], $this->getIncludedFilenames());
     }
 
-    public function getIncludedFilenames(): array
+    protected function getIncludedFilenames(): array
     {
         return $this->includedFilenames;
     }
 
-    public function getVendor(): string
+    protected function getVendor(): string
     {
         return Str::slug($this->argument('vendor'));
     }
 
-    public function getPackage(): string
+    protected function getPackage(): string
     {
         return Str::slug($this->argument('package'));
     }
 
-    public function getVendorReplacer(): string
+    protected function getVendorReplacer(): string
     {
         return $this->vendorReplacer;
     }
 
-    public function getPackageReplacer(): string
+    protected function getPackageReplacer(): string
     {
         return $this->packageReplacer;
     }
 
-    public function getReplacersAndValues(): array
+    protected function getReplacersAndValues(): array
     {
         return [
             $this->getVendorReplacer() => $this->getVendor(),
