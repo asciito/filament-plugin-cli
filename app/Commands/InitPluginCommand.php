@@ -2,6 +2,10 @@
 
 namespace App\Commands;
 
+use App\Formatters\LowerCaseFormatter;
+use App\Formatters\StudlyCaseFormatter;
+use App\Formatters\UpperCaseFormatter;
+use App\Replacer;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Sleep;
@@ -77,21 +81,11 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     {
         spin(
             function () use ($file) {
-                $shouldReplace = [];
+                $content = File::get($file->getRealPath());
 
-                foreach ($this->getReplacersAndValues() as $replacer => $value) {
-                    $shouldReplace['{{'.str::studly($replacer).'}}'] = Str::studly($value);
-                    $shouldReplace['{{'.str::upper($replacer).'}}'] = str::upper($value);
-                    $shouldReplace['{{'.$replacer.'}}'] = $value;
-                }
+                File::put($file->getRealPath(), $this->replacePlaceholders($content));
 
-                Sleep::usleep(0.5);
-
-                File::replaceInFile(
-                    search: array_keys($shouldReplace),
-                    replace: array_values($shouldReplace),
-                    path: $file->getRealPath(),
-                );
+                Sleep::usleep(1);
             },
             'Replacing values in file '.$file->getBasename(),
         );
@@ -100,14 +94,30 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     public function renameFile(SplFileInfo $file): bool
     {
         $path = $file->getPath();
-        $name = Str::replace(
-            'package',
-            Str::studly($this->getPackage()),
-            $file->getBasename('.stub'),
-            false
-        );
+        $filename = $file->getBasename('.stub');
 
-        return File::move($file->getRealPath(), join_paths($path, $name));
+        return File::move($file->getRealPath(), join_paths($path, $this->replacePlaceholders($filename, false)));
+    }
+
+    protected function replacePlaceholders(string $content, bool $withWrapper = true): string
+    {
+        foreach ($this->getReplacersAndValues() as $replacer => $value) {
+            $replacer  = new Replacer(
+                $replacer,
+                $value,
+                formatters: [
+                    StudlyCaseFormatter::class,
+                    UpperCaseFormatter::class,
+                    LowerCaseFormatter::class
+                ],
+                startWrapper: $withWrapper ? '{{' : '',
+                endWrapper: $withWrapper ? '}}' : '',
+            );
+
+            $content = $replacer->replaceOn($content);
+        }
+
+        return $content;
     }
 
     protected function getExcludedDirectories(): array

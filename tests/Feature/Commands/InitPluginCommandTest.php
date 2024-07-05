@@ -23,12 +23,12 @@ it('replace vendor and package in stub file', function () {
       "description": "Lorem ipsum dolor it {{Package}}",
       "autoload": {
         "psr-4": {
-          "\{{Vendor}}\{{Package}}\": "src/"
+          "\\{{Vendor}}\\{{Package}}\\": "src/"
         }
       },
       "extra": {
         "laravel": [
-          "{{Vendor}}\{{Package}}\SomeClass"
+          "{{Vendor}}\\{{Package}}\\SomeClass"
         ]
       }
     }
@@ -68,12 +68,12 @@ it('replace vendor and package in stub file', function () {
           "description": "Lorem ipsum dolor it Package",
           "autoload": {
             "psr-4": {
-              "\Vendor\Package\": "src/"
+              "\\Vendor\\Package\\": "src/"
             }
           },
           "extra": {
             "laravel": [
-              "Vendor\Package\SomeClass"
+              "Vendor\\Package\\SomeClass"
             ]
           }
         }
@@ -93,10 +93,10 @@ it('replace file name', function () {
     \Illuminate\Support\Sleep::fake();
 
     $this->disk->put('PackageClass.php.stub', '');
-    $this->disk->put('VENDORClass.php.stub', '');
+    $this->disk->put('VendorClass.php.stub', '');
 
     $this->artisan('init', [
-        'vendor' => 'vendor',
+        'vendor' => 'some-vendor',
         'package' => 'some-package',
         '--path' => $this->disk->path(''),
         '--dont-delete-cli' => true,
@@ -105,5 +105,5 @@ it('replace file name', function () {
     \Illuminate\Support\Sleep::assertSleptTimes(2);
 
     expect($this->disk->exists('SomePackageClass.php'))->toBeTrue()
-        ->and($this->disk->exists('VENDORClass.php'))->toBeTrue();
+        ->and($this->disk->exists('SomeVendorClass.php'))->toBeTrue();
 });
