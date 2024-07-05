@@ -1,18 +1,13 @@
 {
-    "name": "laravel-zero/laravel-zero",
-    "description": "The Laravel Zero Framework.",
-    "keywords": ["framework", "laravel", "laravel zero", "console", "cli"],
-    "homepage": "https://laravel-zero.com",
+    "name": "asciito/filament-plugin-cli",
+    "description": "The CLI to start a new Filament Plugin with asciito/filament-plugin package",
+    "keywords": ["framework", "laravel", "laravel zero", "console", "cli", "filament", "filamentphp", "filament-plugin"],
     "type": "project",
     "license": "MIT",
-    "support": {
-        "issues": "https://github.com/laravel-zero/laravel-zero/issues",
-        "source": "https://github.com/laravel-zero/laravel-zero"
-    },
     "authors": [
         {
-            "name": "Nuno Maduro",
-            "email": "enunomaduro@gmail.com"
+            "name": "Ayax Córdova",
+            "email": "ayax.cordova@aydev.mx"
         }
     ],
     "require": {
