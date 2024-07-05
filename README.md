@@ -9,7 +9,7 @@ This CLI is intended to be used only with [asciito/filament-plugin](https://gith
 Inside your newly cloned/downloaded package from [asciito/filament-plugin](https://github.com/asciito/filament-plugin), run the following command:
 
 ```shell
-./package init:plugin <vendor-name> <package-name>
+./plugin init [options] [--] <vendor> <package>
 ```
 
 > Note: if no arguments are given to the command, this will prompt asking for the values.
