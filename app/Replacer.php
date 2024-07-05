@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace App;
 
-use Closure;
-
 class Replacer
 {
     public function __construct(
         protected string $placeholder,
         protected string $value,
-        protected array | string $formatters = [],
+        protected array|string $formatters = [],
         protected string $startWrapper = '',
         protected string $endWrapper = '',
-    )
-    {
+    ) {
         //
     }
 
@@ -41,7 +38,7 @@ class Replacer
         }
 
         foreach ($this->getFormatters() as $formatter) {
-            $formatter = new $formatter();
+            $formatter = new $formatter;
             $placeholder = $this->getPlaceholder();
             $value = $this->getValue();
 

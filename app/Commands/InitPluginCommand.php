@@ -102,13 +102,13 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     protected function replacePlaceholders(string $content, bool $withWrapper = true): string
     {
         foreach ($this->getReplacersAndValues() as $replacer => $value) {
-            $replacer  = new Replacer(
+            $replacer = new Replacer(
                 $replacer,
                 $value,
                 formatters: [
                     StudlyCaseFormatter::class,
                     UpperCaseFormatter::class,
-                    LowerCaseFormatter::class
+                    LowerCaseFormatter::class,
                 ],
                 startWrapper: $withWrapper ? '{{' : '',
                 endWrapper: $withWrapper ? '}}' : '',
