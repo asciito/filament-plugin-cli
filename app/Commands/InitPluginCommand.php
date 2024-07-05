@@ -44,6 +44,12 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         'node_modules',
     ];
 
+    protected array $replacerFormatters = [
+        StudlyCaseFormatter::class,
+        UpperCaseFormatter::class,
+        LowerCaseFormatter::class,
+    ];
+
     // Pattern from: https://regex101.com/library/tQ0bN5
     protected string $validationRuleForPromptValue = '/^(?!-)((?:[a-z0-9]+-?)+)(?<!-)$/';
 
@@ -52,9 +58,9 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         $files = $this->getFiles();
 
         foreach ($files as $file) {
-            $this->replaceValuesInFile($file);
+            $this->replacePlaceholdersInFile($file);
 
-            $this->renameFile($file);
+            $this->replacePlaceholdersInFileName($file);
         }
 
         if (! $this->option('dont-delete-cli') && ! $this->deleteCli()) {
@@ -66,70 +72,9 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return self::SUCCESS;
     }
 
-    protected function getFiles(): Finder
-    {
-        $finder = (new Finder)
-            ->in($this->getPackageDirectory())
-            ->name($this->getFilenames())
-            ->exclude($this->getExcludedDirectories())
-            ->files();
-
-        return $finder;
-    }
-
-    protected function replaceValuesInFile(SplFileInfo $file): void
-    {
-        spin(
-            function () use ($file) {
-                $content = File::get($file->getRealPath());
-
-                File::put($file->getRealPath(), $this->replacePlaceholders($content));
-
-                Sleep::usleep(1);
-            },
-            'Replacing values in file '.$file->getBasename(),
-        );
-    }
-
-    protected function renameFile(SplFileInfo $file): bool
-    {
-        $path = $file->getPath();
-        $filename = $file->getBasename('.stub');
-
-        return File::move($file->getRealPath(), join_paths($path, $this->replacePlaceholders($filename, false)));
-    }
-
-    protected function replacePlaceholders(string $content, bool $withWrapper = true): string
-    {
-        foreach ($this->getReplacersAndValues() as $replacer => $value) {
-            $replacer = new Replacer(
-                $replacer,
-                $value,
-                formatters: [
-                    StudlyCaseFormatter::class,
-                    UpperCaseFormatter::class,
-                    LowerCaseFormatter::class,
-                ],
-                startWrapper: $withWrapper ? '{{' : '',
-                endWrapper: $withWrapper ? '}}' : '',
-            );
-
-            $content = $replacer->replaceOn($content);
-        }
-
-        return $content;
-    }
-
     protected function getExcludedDirectories(): array
     {
         return $this->excludedDirectories;
-    }
-
-    protected function getPackageDirectory(): array
-    {
-        return [
-            $this->option('path') ?: getcwd(),
-        ];
     }
 
     protected function getFilenames(): array
@@ -162,12 +107,72 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return $this->packageReplacer;
     }
 
+    protected function getValidationRuleForPromptValue(): string
+    {
+        return $this->validationRuleForPromptValue;
+    }
+
+    protected function getReplacerFormatters(): array
+    {
+        return $this->replacerFormatters;
+    }
+
     protected function getReplacersAndValues(): array
     {
         return [
             $this->getVendorReplacer() => $this->getVendor(),
             $this->getPackageReplacer() => $this->getPackage(),
         ];
+    }
+
+    protected function getFiles(): Finder
+    {
+        $finder = (new Finder)
+            ->in($this->getPackageDirectory())
+            ->name($this->getFilenames())
+            ->exclude($this->getExcludedDirectories())
+            ->files();
+
+        return $finder;
+    }
+
+    protected function replacePlaceholdersInFile(SplFileInfo $file): void
+    {
+        spin(
+            function () use ($file) {
+                $content = File::get($file->getRealPath());
+
+                File::put($file->getRealPath(), $this->replacePlaceholders($content));
+
+                Sleep::usleep(1);
+            },
+            'Replacing values in file '.$file->getBasename(),
+        );
+    }
+
+    protected function replacePlaceholdersInFileName(SplFileInfo $file): bool
+    {
+        $path = $file->getPath();
+        $filename = $file->getBasename('.stub');
+
+        return File::move($file->getRealPath(), join_paths($path, $this->replacePlaceholders($filename, false)));
+    }
+
+    protected function replacePlaceholders(string $content, bool $shouldWrap = true): string
+    {
+        foreach ($this->getReplacersAndValues() as $replacer => $value) {
+            $replacer = new Replacer(
+                $replacer,
+                $value,
+                formatters: $this->getReplacerFormatters(),
+                startWrapper: $shouldWrap ? '{{' : '',
+                endWrapper: $shouldWrap ? '}}' : '',
+            );
+
+            $content = $replacer->replaceOn($content);
+        }
+
+        return $content;
     }
 
     protected function deleteCli(): bool
@@ -246,8 +251,10 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         ];
     }
 
-    protected function getValidationRuleForPromptValue(): string
+    protected function getPackageDirectory(): array
     {
-        return $this->validationRuleForPromptValue;
+        return [
+            $this->option('path') ?: getcwd(),
+        ];
     }
 }
