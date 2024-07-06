@@ -5,11 +5,17 @@
 </p>
 
 <p align="center">
+    <a href=https://packagist.org/packages/asciito/filament-plugin-cl">
+        <img src="https://poser.pugx.org/asciito/filament-plugin-cli/v" alt="Latest Stable Version">
+    </a>
     <a href="https://packagist.org/packages/asciito/filament-plugin-cli">
         <img src="https://poser.pugx.org/asciito/filament-plugin-cli/require/php" alt="PHP Version Require">
     </a>
     <a href="https://packagist.org/packages/asciito/filament-plugin-cli">
         <img src="https://poser.pugx.org/asciito/filament-plugin-cli/license.svg" alt="License">
+    </a>
+    <a href="https://packagist.org/packages/asciito/filament-plugin-cli">
+        <img src="https://poser.pugx.org/asciito/filament-plugin-cli/downloads" alt="Download">
     </a>
 </p>
 
