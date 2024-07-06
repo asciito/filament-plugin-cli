@@ -47,7 +47,7 @@ it('replace vendor and package in stub file', function () {
     expect($this->disk->exists('SomeClass.php.stub'))->toBeTrue()
         ->and($this->disk->exists('composer.json.stub'))->toBeTrue()
         ->and($this->disk->exists('replacers.txt.stub'))->tobeTrue()
-        ->and(fn() => $this->artisan('init', ['--path' => $this->disk->path('')])
+        ->and(fn () => $this->artisan('init', ['--path' => $this->disk->path('')])
             ->expectsQuestion('Vendor', 'vendor')
             ->expectsConfirmation('Do you want to use the vendor name [vendor]', 'yes')
             ->doesntExpectOutput('Please provide a valid name like [some-vendor-name]')
