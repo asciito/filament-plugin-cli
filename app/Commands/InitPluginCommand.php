@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Formatters\LowerCaseFormatter;
 use App\Formatters\StudlyCaseFormatter;
 use App\Formatters\UpperCaseFormatter;
-use App\Replacer;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Sleep;
@@ -152,27 +151,21 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
     protected function replacePlaceholdersInFileName(SplFileInfo $file): bool
     {
-        $path = $file->getPath();
-        $filename = $file->getBasename('.stub');
+        $content = $this->replacePlaceholders($file->getBasename('.stub'), false);
 
-        return File::move($file->getRealPath(), join_paths($path, $this->replacePlaceholders($filename, false)));
+        return File::move($file->getRealPath(), join_paths($file->getPath(), $content));
     }
 
     protected function replacePlaceholders(string $content, bool $shouldWrap = true): string
     {
-        foreach ($this->getReplacersAndValues() as $replacer => $value) {
-            $replacer = new Replacer(
-                $replacer,
-                $value,
-                formatters: $this->getReplacerFormatters(),
-                startWrapper: $shouldWrap ? '{{' : '',
-                endWrapper: $shouldWrap ? '}}' : '',
-            );
-
-            $content = $replacer->replaceOn($content);
-        }
-
-        return $content;
+        return \App\replacePlaceholder(
+            placeholder: array_keys($this->getReplacersAndValues()),
+            value: array_values($this->getReplacersAndValues()),
+            content: $content,
+            formatters: $this->getReplacerFormatters(),
+            startWrapper: $shouldWrap ? '{{' : '',
+            endWrapper: $shouldWrap ? '}}' : '',
+        );
     }
 
     protected function deleteCli(): bool
