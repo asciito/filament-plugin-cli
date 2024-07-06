@@ -143,7 +143,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
                 File::put($file->getRealPath(), $this->replacePlaceholders($content));
 
-                Sleep::usleep(1);
+                Sleep::usleep(500_000);
             },
             'Replacing values in file '.$file->getBasename(),
         );
