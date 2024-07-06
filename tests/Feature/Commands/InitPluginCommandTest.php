@@ -108,3 +108,30 @@ it('replace file name', function () {
     expect($this->disk->exists('SomePackageClass.php'))->toBeTrue()
         ->and($this->disk->exists('SomeVendorClass.php'))->toBeTrue();
 });
+
+it('remove tags', function () {
+    \Illuminate\Support\Sleep::fake();
+
+    $this->disk->put('fake.txt.stub', <<<'TEXT'
+    <!--DELETE-->This will not be here soon<!--/DELETE-->
+    This will be in the fake file,<!--DELETE--> but not this <!--/DELETE--> and
+    will not remove the text that is not surrounded by the `DELETE` tag.
+    The next tag <!--DELETE-->is has a typo so will not be removed<!--DELETE-->
+    from the text.
+    TEXT);
+
+    $this->artisan('init', [
+        'vendor' => 'vendor',
+        'package' => 'package',
+        '--path' => $this->disk->path(''),
+        '--dont-delete-cli' => true,
+    ]);
+
+    expect($this->disk->get('fake.txt'))
+        ->toBe(<<<'TEXT'
+        This will be in the fake file, and
+        will not remove the text that is not surrounded by the `DELETE` tag.
+        The next tag <!--DELETE-->is has a typo so will not be removed<!--DELETE-->
+        from the text.
+        TEXT);
+});

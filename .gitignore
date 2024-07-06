@@ -3,5 +3,4 @@
 /.vscode
 /.vagrant
 .phpunit.result.cache
-/builds
-!/builds/.gitkeep
+.DS_Store

@@ -57,9 +57,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         $files = $this->getFiles();
 
         foreach ($files as $file) {
-            $this->replacePlaceholdersInFile($file);
-
-            $this->replacePlaceholdersInFileName($file);
+            $this->initFile($file);
         }
 
         if (! $this->option('dont-delete-cli') && $this->confirm('Do you want to delete the CLI')) {
@@ -67,6 +65,14 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         }
 
         return self::SUCCESS;
+    }
+
+    protected function initFile(SplFileInfo $file): void
+    {
+        $this
+            ->removeTags('DELETE', $file)
+            ->replacePlaceholdersInFile($file)
+            ->replacePlaceholdersInFileName($file);
     }
 
     protected function getExcludedDirectories(): array
@@ -133,7 +139,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return $finder;
     }
 
-    protected function replacePlaceholdersInFile(SplFileInfo $file): void
+    protected function replacePlaceholdersInFile(SplFileInfo $file): static
     {
         spin(
             function () use ($file) {
@@ -145,13 +151,17 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
             },
             'Replacing values in file '.$file->getBasename(),
         );
+
+        return $this;
     }
 
-    protected function replacePlaceholdersInFileName(SplFileInfo $file): bool
+    protected function replacePlaceholdersInFileName(SplFileInfo $file): static
     {
         $content = $this->replacePlaceholders($file->getBasename('.stub'), false);
 
-        return File::move($file->getRealPath(), join_paths($file->getPath(), $content));
+        File::move($file->getRealPath(), join_paths($file->getPath(), $content));
+
+        return $this;
     }
 
     protected function replacePlaceholders(string $content, bool $shouldWrap = true): string
@@ -164,6 +174,19 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
             startWrapper: $shouldWrap ? '{{' : '',
             endWrapper: $shouldWrap ? '}}' : '',
         );
+    }
+
+    protected function removeTags(array|string $tags, SplFileInfo $file): static
+    {
+        $content = collect($tags)
+            ->reduce(
+                fn (string $content, string $tag) => \App\removeTag($tag, $content),
+                $file->getContents()
+            );
+
+        File::put($file->getRealPath(), $content);
+
+        return $this;
     }
 
     protected function deleteCli(): bool

@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace App;
 
+use Illuminate\Support\Str;
+
+function removeTag(string $tag, string $content): string
+{
+    return Str::of($content)
+        ->replaceMatches('/<!--'.$tag.'-->.*?<!--\/'.$tag.'-->/', '')
+        ->trim()
+        ->toString();
+}
+
 /**
  * Replace the placeholders with the given value
  *
