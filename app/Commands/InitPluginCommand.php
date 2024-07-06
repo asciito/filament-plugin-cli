@@ -62,10 +62,8 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
             $this->replacePlaceholdersInFileName($file);
         }
 
-        if (! $this->option('dont-delete-cli') && ! $this->deleteCli()) {
-            $this->error('The CLI could not be deleted');
-
-            return self::FAILURE;
+        if (! $this->option('dont-delete-cli') && $this->confirm('Do you want to delete the CLI')) {
+            $this->deleteCli();
         }
 
         return self::SUCCESS;
@@ -173,9 +171,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         $status = spin(function () {
             $file = \Phar::running(false);
 
-            if (empty($file)) {
-                return false;
-            }
+            throw_if(empty($file), new \PharException('The file is not a phar file, please compile the CLI first'));
 
             Sleep::sleep(1);
 

@@ -46,16 +46,17 @@ it('replace vendor and package in stub file', function () {
 
     expect($this->disk->exists('SomeClass.php.stub'))->toBeTrue()
         ->and($this->disk->exists('composer.json.stub'))->toBeTrue()
-        ->and($this->disk->exists('replacers.txt.stub'))->tobeTrue();
-
-    $this->artisan('init', ['--path' => $this->disk->path(''), '--dont-delete-cli' => true])
-        ->expectsQuestion('Vendor', 'vendor')
-        ->expectsConfirmation('Do you want to use the vendor name [vendor]', 'yes')
-        ->doesntExpectOutput('Please provide a valid name like [some-vendor-name]')
-        ->expectsQuestion('Package', 'package')
-        ->expectsConfirmation('Do you want to use the package name [package]', 'yes')
-        ->doesntExpectOutput('Please provide a valid name like [some-package-name]')
-        ->assertSuccessful();
+        ->and($this->disk->exists('replacers.txt.stub'))->tobeTrue()
+        ->and(fn() => $this->artisan('init', ['--path' => $this->disk->path('')])
+            ->expectsQuestion('Vendor', 'vendor')
+            ->expectsConfirmation('Do you want to use the vendor name [vendor]', 'yes')
+            ->doesntExpectOutput('Please provide a valid name like [some-vendor-name]')
+            ->expectsQuestion('Package', 'package')
+            ->expectsConfirmation('Do you want to use the package name [package]', 'yes')
+            ->doesntExpectOutput('Please provide a valid name like [some-package-name]')
+            ->expectsConfirmation('Do you want to delete the CLI')
+            ->assertSuccessful())
+        ->not->toThrow(\PharException::class);
 
     \Illuminate\Support\Sleep::assertSleptTimes(3);
 
