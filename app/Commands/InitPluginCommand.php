@@ -69,11 +69,10 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
     protected function initFile(SplFileInfo $file): void
     {
-        $this->replacePlaceholdersInFile($file);
-
-        $this->removeTags('DELETE', $file);
-
-        $this->replacePlaceholdersInFileName($file);
+        $this
+            ->removeTags('DELETE', $file)
+            ->replacePlaceholdersInFile($file)
+            ->replacePlaceholdersInFileName($file);
     }
 
     protected function getExcludedDirectories(): array
@@ -140,7 +139,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return $finder;
     }
 
-    protected function replacePlaceholdersInFile(SplFileInfo $file): void
+    protected function replacePlaceholdersInFile(SplFileInfo $file): static
     {
         spin(
             function () use ($file) {
@@ -152,13 +151,17 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
             },
             'Replacing values in file '.$file->getBasename(),
         );
+
+        return $this;
     }
 
-    protected function replacePlaceholdersInFileName(SplFileInfo $file): bool
+    protected function replacePlaceholdersInFileName(SplFileInfo $file): static
     {
         $content = $this->replacePlaceholders($file->getBasename('.stub'), false);
 
-        return File::move($file->getRealPath(), join_paths($file->getPath(), $content));
+        File::move($file->getRealPath(), join_paths($file->getPath(), $content));
+
+        return $this;
     }
 
     protected function replacePlaceholders(string $content, bool $shouldWrap = true): string
@@ -173,7 +176,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         );
     }
 
-    protected function removeTags(array|string $tags, SplFileInfo $file): void
+    protected function removeTags(array|string $tags, SplFileInfo $file): static
     {
         $content = collect($tags)
             ->reduce(
@@ -182,6 +185,8 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
             );
 
         File::put($file->getRealPath(), $content);
+
+        return $this;
     }
 
     protected function deleteCli(): bool
