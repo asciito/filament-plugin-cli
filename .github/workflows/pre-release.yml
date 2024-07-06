@@ -1,0 +1,31 @@
+name: Pre-release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: json, dom, curl, libxml, mbstring
+          coverage: none
+
+      - name: Build CLI
+        run: |
+          php plugin app:build --build-version=${{ github.ref }}
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          prerelease: true
+          artifacts: "builds/plugin"
