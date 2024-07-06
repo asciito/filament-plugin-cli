@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://github.com/asciito/filament-plugin">
-        <img width="800" src="https://banners.beyondco.de/Filament%20Plugin%20<span style='color: rgba(255,44,32,1)'>CLI</span>.png?theme=light&pattern=architect&style=style_2&description=This%20CLI%20should%20be%20used%20only%20with%20'asciito/filament-plugin'&packageName=./plugin init [options] [--] <vendor> <package>&md=1&showWatermark=1&fontSize=180px&images=none" alt="Filament Plugin CLI art">
+        <img width="800" src="https://banners.beyondco.de/Filament%20Plugin%20%3Cspan%20style='color:%20rgba(255,44,32,1)'%3ECLI%3C/span%3E.png?theme=light&pattern=architect&style=style_2&description=This%20CLI%20should%20beused%20only%20with%20%27asciito/filament-plugin%27&packageName=./plugin%20init%20%5Boptions%5D%20%5B--%5D%20%3Cvendor%3E%20%3Cpackage%3E&md=1&showWatermark=1&fontSize=180px&images=none" alt="Filament Plugin CLI art">
     </a>
 </p>
 
