@@ -28,8 +28,15 @@ jobs:
         run: |
           php plugin app:build --build-version=${{ github.ref }}
 
-      - name: Release
+      - name: Compress CLI
+        run: |
+          cd builds
+          FILES=$(find . \( -type f -name "plugin" \))
+          echo $FILES | zip plugin.zip -@
+          echo $FILES | xargs tar -czf plugin.tar.gz
+
+      - name:  Release
         uses: ncipollo/release-action@v1
         with:
           prerelease: true
-          artifacts: "builds/plugin"
+          artifacts: "builds/plugin.*"
