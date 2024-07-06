@@ -57,9 +57,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         $files = $this->getFiles();
 
         foreach ($files as $file) {
-            $this->replacePlaceholdersInFile($file);
-
-            $this->replacePlaceholdersInFileName($file);
+            $this->initFile($file);
         }
 
         if (! $this->option('dont-delete-cli') && $this->confirm('Do you want to delete the CLI')) {
@@ -67,6 +65,15 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         }
 
         return self::SUCCESS;
+    }
+
+    protected function initFile(SplFileInfo $file): void
+    {
+        $this->replacePlaceholdersInFile($file);
+
+        $this->removeTags('DELETE', $file);
+
+        $this->replacePlaceholdersInFileName($file);
     }
 
     protected function getExcludedDirectories(): array
@@ -164,6 +171,17 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
             startWrapper: $shouldWrap ? '{{' : '',
             endWrapper: $shouldWrap ? '}}' : '',
         );
+    }
+
+    protected function removeTags(array|string $tags, SplFileInfo $file): void
+    {
+        $content = collect($tags)
+            ->reduce(
+                fn (string $content, string $tag) => \App\removeTag($tag, $content),
+                $file->getContents()
+            );
+
+        File::put($file->getRealPath(), $content);
     }
 
     protected function deleteCli(): bool
