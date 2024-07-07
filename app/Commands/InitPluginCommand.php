@@ -21,6 +21,8 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     protected $signature = 'init
                             { vendor : The vendor\'s name (vendor-name) }
                             { package : The package\'s name (package-name) }
+                            { author :  The author\'s name }
+                            { author-email : The author\'s email }
                             { --p|path : Path to the plugin directory }
                             { --d|dont-delete-cli : Prevent deleting the CLI }';
 
@@ -54,6 +56,8 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
     public function handle(): int
     {
+        $this->validateConfiguration();
+
         $files = $this->getFiles();
 
         foreach ($files as $file) {
@@ -100,6 +104,16 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return Str::slug($this->argument('package'));
     }
 
+    protected function getAuthor(): string
+    {
+        return Str::of($this->argument('author'))->slug(' ')->title();
+    }
+
+    protected function getAuthorEmail(): string
+    {
+        return Str::of($this->argument('author-email'));
+    }
+
     protected function getVendorReplacer(): string
     {
         return $this->vendorReplacer;
@@ -137,6 +151,30 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
             ->files();
 
         return $finder;
+    }
+
+    protected function validateConfiguration(): void
+    {
+        $this->printConfiguration();
+
+        if (! $this->confirm('Do you want to use this configuration')) {
+            $this->promptAgain();
+        }
+    }
+
+    protected function promptAgain(): void
+    {
+        $this->promptForMissingArguments($this->input, $this->output);
+    }
+
+    protected function printConfiguration(): void
+    {
+        $this->line($message = <<<CONFIG
+        Author:        {$this->getAuthor()}
+        Author E-mail: {$this->getAuthorEmail()}
+        Vendor:        {$this->getVendor()}
+        Package:       {$this->getPackage()}
+        CONFIG);
     }
 
     protected function replacePlaceholdersInFile(SplFileInfo $file): static
@@ -206,50 +244,34 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
     protected function vendorPrompt(): string
     {
-        return $this->askAndRepeat(
-            'Vendor',
-            fn (string $value) => ! $this->confirm("Do you want to use the vendor name [$value]"),
-            function (string $value) {
-                if (! Str::isMatch($this->getValidationRuleForPromptValue(), $value)) {
-                    return 'please provide a valid name like [some-vendor-name]';
-                }
-
-                return true;
-            }
-        );
+        return $this->askAndRepeat('What\'s the Vendor name');
     }
 
     protected function packagePrompt(): string
     {
-        return $this->askAndRepeat(
-            'Package',
-            fn (string $value) => ! $this->confirm("Do you want to use the package name [$value]"),
-            function (string $value) {
-                if (! Str::isMatch($this->getValidationRuleForPromptValue(), $value)) {
-                    return 'please provide a valid name like [some-package-name]';
-                }
-
-                return true;
-            }
-        );
+        return $this->askAndRepeat('What\'s the Package name');
     }
 
-    public function askAndRepeat(string $question, ?\Closure $shouldRepeat = null, ?\Closure $validate = null): string
+    protected function authorPrompt(): string
     {
-        do {
-            $value = $this->ask($question);
+        return $this->askAndRepeat('What\'s the Author\'s name');
+    }
 
-            if ($value && $validate instanceof \Closure && $valid = $validate($value)) {
-                if (! is_string($valid)) {
-                    break;
-                }
+    protected function authorEmailPrompt(): string
+    {
+        return $this->askAndRepeat('What\'s the Author\'s e-mail');
+    }
 
-                $this->error($valid);
+    public function askAndRepeat(string $question, ?\Closure $validate = null): string
+    {
+        $value = $this->ask($question);
+
+        if ($validate instanceof \Closure) {
+            if (is_string($error = $validate(value: $value))) {
+                $this->error($error);
+
+                return $this->askAndRepeat($question, $validate);
             }
-        } while (true);
-
-        if ($shouldRepeat instanceof \Closure && $shouldRepeat($value)) {
-            return $this->askAndRepeat($question, $shouldRepeat, $validate);
         }
 
         return $value;
@@ -260,6 +282,8 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return [
             'vendor' => fn () => $this->vendorPrompt(),
             'package' => fn () => $this->packagePrompt(),
+            'author' => fn () => $this->authorPrompt(),
+            'author-email' => fn () => $this->authorEmailPrompt(),
         ];
     }
 

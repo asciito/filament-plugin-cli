@@ -3,6 +3,14 @@
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(fn () => $this->disk = Storage::fake('stubs'));
+beforeEach(fn () => $this->commandConfig = [
+    'vendor' => 'asciito',
+    'package' => 'package',
+    'author' => 'John Doe',
+    'author-email' => 'john@doe.com',
+    '--path' => $this->disk->path(''),
+    '--dont-delete-cli' => true,
+]);
 
 it('replace vendor and package in stub file', function () {
     \Illuminate\Support\Sleep::fake();
@@ -44,47 +52,48 @@ it('replace vendor and package in stub file', function () {
     This does nothing {{VenDOr}} and {{pACkage}}, this {{also}} does nothing
     TEXT);
 
-    expect($this->disk->exists('SomeClass.php.stub'))->toBeTrue()
-        ->and($this->disk->exists('composer.json.stub'))->toBeTrue()
-        ->and($this->disk->exists('replacers.txt.stub'))->tobeTrue()
-        ->and(fn () => $this->artisan('init', ['--path' => $this->disk->path('')])
-            ->expectsQuestion('Vendor', 'vendor')
-            ->expectsConfirmation('Do you want to use the vendor name [vendor]', 'yes')
-            ->doesntExpectOutput('Please provide a valid name like [some-vendor-name]')
-            ->expectsQuestion('Package', 'package')
-            ->expectsConfirmation('Do you want to use the package name [package]', 'yes')
-            ->doesntExpectOutput('Please provide a valid name like [some-package-name]')
-            ->expectsConfirmation('Do you want to delete the CLI')
-            ->assertSuccessful())
-        ->not->toThrow(\PharException::class);
+    $this->artisan('init', ['--path' => $this->disk->path(''), '-d'])
+        ->expectsQuestion('What\'s the Vendor name', 'asciito')
+        ->expectsQuestion('What\'s the Package name', 'package')
+        ->expectsQuestion('What\'s the Author\'s name', 'John Doe')
+        ->expectsQuestion('What\'s the Author\'s e-mail', 'john@doe.com')
+        ->expectsOutput(<<<'OUTPUT'
+        Author:        John Doe
+        Author E-mail: john@doe.com
+        Vendor:        asciito
+        Package:       package
+        OUTPUT)
+        ->expectsConfirmation('Do you want to use this configuration', 'yes')
+        ->expectsConfirmation('Do you want to delete the CLI')
+        ->assertSuccessful();
 
     \Illuminate\Support\Sleep::assertSleptTimes(3);
 
     expect($this->disk->get('SomeClass.php'))
-        ->toContain('namespace Vendor\\Package')
+        ->toContain('namespace Asciito\\Package')
         ->and($this->disk->get('composer.json'))
         ->toBe(<<<'JSON'
         {
-          "name": "vendor/package",
+          "name": "asciito/package",
           "description": "Lorem ipsum dolor it Package",
           "autoload": {
             "psr-4": {
-              "\\Vendor\\Package\\": "src/"
+              "\\Asciito\\Package\\": "src/"
             }
           },
           "extra": {
             "laravel": [
-              "Vendor\\Package\\SomeClass"
+              "Asciito\\Package\\SomeClass"
             ]
           }
         }
         JSON)
         ->and($this->disk->get('replacers.txt'))
         ->toBe(<<<'TEXT'
-        Vendor and PACKAGE
-        vendor and Package
+        Asciito and PACKAGE
+        asciito and Package
 
-        This is the VENDOR and this is the package
+        This is the ASCIITO and this is the package
 
         This does nothing {{VenDOr}} and {{pACkage}}, this {{also}} does nothing
         TEXT);
@@ -96,17 +105,14 @@ it('replace file name', function () {
     $this->disk->put('PackageClass.php.stub', '');
     $this->disk->put('VendorClass.php.stub', '');
 
-    $this->artisan('init', [
-        'vendor' => 'some-vendor',
-        'package' => 'some-package',
-        '--path' => $this->disk->path(''),
-        '--dont-delete-cli' => true,
-    ])->assertSuccessful();
+    $this->artisan('init', $this->commandConfig)
+        ->expectsConfirmation('Do you want to use this configuration')
+        ->assertSuccessful();
 
     \Illuminate\Support\Sleep::assertSleptTimes(2);
 
-    expect($this->disk->exists('SomePackageClass.php'))->toBeTrue()
-        ->and($this->disk->exists('SomeVendorClass.php'))->toBeTrue();
+    expect($this->disk->exists('PackageClass.php'))->toBeTrue()
+        ->and($this->disk->exists('AsciitoClass.php'))->toBeTrue();
 });
 
 it('remove tags', function () {
@@ -120,12 +126,8 @@ it('remove tags', function () {
     from the text.
     TEXT);
 
-    $this->artisan('init', [
-        'vendor' => 'vendor',
-        'package' => 'package',
-        '--path' => $this->disk->path(''),
-        '--dont-delete-cli' => true,
-    ]);
+    $this->artisan('init', $this->commandConfig)
+        ->expectsConfirmation('Do you want to use this configuration');
 
     expect($this->disk->get('fake.txt'))
         ->toBe(<<<'TEXT'
