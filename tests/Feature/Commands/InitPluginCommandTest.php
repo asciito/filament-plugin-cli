@@ -106,7 +106,7 @@ it('replace file name', function () {
     $this->disk->put('VendorClass.php.stub', '');
 
     $this->artisan('init', $this->commandConfig)
-        ->expectsConfirmation('Do you want to use this configuration')
+        ->expectsConfirmation('Do you want to use this configuration', 'yes')
         ->assertSuccessful();
 
     \Illuminate\Support\Sleep::assertSleptTimes(2);
@@ -127,7 +127,7 @@ it('remove tags', function () {
     TEXT);
 
     $this->artisan('init', $this->commandConfig)
-        ->expectsConfirmation('Do you want to use this configuration');
+        ->expectsConfirmation('Do you want to use this configuration', 'yes');
 
     expect($this->disk->get('fake.txt'))
         ->toBe(<<<'TEXT'

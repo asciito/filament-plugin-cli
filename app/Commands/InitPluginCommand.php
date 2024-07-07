@@ -32,13 +32,6 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
     protected string $packageReplacer = 'package';
 
-    protected string $includedFileExtension = '*.stub';
-
-    protected array $includedFilenames = [
-        'README.md',
-        'LICENSE.md',
-    ];
-
     protected array $excludedDirectories = [
         'build',
         'vendor',
@@ -82,16 +75,6 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     protected function getExcludedDirectories(): array
     {
         return $this->excludedDirectories;
-    }
-
-    protected function getFilenames(): array
-    {
-        return array_merge([$this->includedFileExtension], $this->getIncludedFilenames());
-    }
-
-    protected function getIncludedFilenames(): array
-    {
-        return $this->includedFilenames;
     }
 
     protected function getVendor(): string
@@ -146,9 +129,8 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     {
         $finder = (new Finder)
             ->in($this->getPackageDirectory())
-            ->name($this->getFilenames())
-            ->exclude($this->getExcludedDirectories())
-            ->files();
+            ->files()
+            ->exclude($this->getExcludedDirectories());
 
         return $finder;
     }
@@ -159,17 +141,21 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
         if (! $this->confirm('Do you want to use this configuration')) {
             $this->promptAgain();
+
+            $this->validateConfiguration();
         }
     }
 
     protected function promptAgain(): void
     {
-        $this->promptForMissingArguments($this->input, $this->output);
+        foreach ($this->promptForMissingArgumentsUsing() as $argument => $prompt) {
+            $this->input->setArgument($argument, $prompt());
+        }
     }
 
     protected function printConfiguration(): void
     {
-        $this->line($message = <<<CONFIG
+        $this->line(<<<CONFIG
         Author:        {$this->getAuthor()}
         Author E-mail: {$this->getAuthorEmail()}
         Vendor:        {$this->getVendor()}
