@@ -6,5 +6,7 @@ namespace App\Formatters\Contracts;
 
 interface Formatter
 {
-    public function format(string $value): string;
+    public function formatPlaceholder(string $placeholder): string;
+
+    public function formatValue(string $value): string;
 }

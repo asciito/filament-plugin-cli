@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Formatters\Contracts\Formatter;
+
 class Replacer
 {
     public function __construct(
@@ -38,13 +40,14 @@ class Replacer
         }
 
         foreach ($this->getFormatters() as $formatter) {
+            /** @var Formatter $formatter */
             $formatter = new $formatter;
             $placeholder = $this->getPlaceholder();
             $value = $this->getValue();
 
             $content = str_replace(
-                search: $this->wrapPlaceholder($formatter->format($placeholder)),
-                replace: $formatter->format($value),
+                search: $this->wrapPlaceholder($formatter->formatPlaceholder($placeholder)),
+                replace: $formatter->formatValue($value),
                 subject: $content,
             );
         }
