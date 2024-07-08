@@ -26,7 +26,7 @@
 Inside your newly cloned/downloaded package from [asciito/filament-plugin](https://github.com/asciito/filament-plugin), run the following command:
 
 ```shell
-./plugin init [options] [--] <vendor> <package>
+./plugin init [options] [--] <vendor> <package> <author> <author-email>
 ```
 
 > Note: if no arguments are given to the command, this will prompt asking for the values.
