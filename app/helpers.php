@@ -7,6 +7,21 @@ namespace App;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
+/**
+ * Remove tags from content
+ *
+ * e.g.
+ * `<!--<TAG_NAME>--> ... <!--/<TAG_NAME>-->`
+ * Replace the <TAG_NAME> with the name of the tag you want to be removed from
+ * the content.
+ *
+ * Be sure to close correctly the tag in your content, because if no matching closing
+ * tag is found, the tag will remove the content until the next close tag occurrence.
+ *
+ * @param  string  $tag  The tag to remove
+ * @param  string  $content  The content which tags will be removed
+ * @return string The content without the tag
+ */
 function removeTag(string $tag, string $content): string
 {
     return Str::of($content)
