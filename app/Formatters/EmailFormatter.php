@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Formatters;
 
-use App\Formatters;
 use Illuminate\Support\Str;
 
-class UpperCaseFormatter implements Formatters\Contracts\Formatter
+class EmailFormatter implements \App\Formatters\Contracts\Formatter
 {
     public function formatPlaceholder(string $placeholder): string
     {
-        return Str::of($placeholder)->slug('')->upper()->toString();
+        return Str::of($placeholder)->slug().':email';
     }
 
     public function formatValue(string $value): string
     {
-        return Str::of($value)->slug('')->upper()->toString();
+        return filter_var($value, FILTER_SANITIZE_EMAIL);
     }
 }

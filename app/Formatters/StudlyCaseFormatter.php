@@ -9,7 +9,12 @@ use Illuminate\Support\Str;
 
 class StudlyCaseFormatter implements Formatters\Contracts\Formatter
 {
-    public function format(string $value): string
+    public function formatPlaceholder(string $placeholder): string
+    {
+        return Str::of($placeholder)->studly()->toString();
+    }
+
+    public function formatValue(string $value): string
     {
         return Str::of($value)->studly()->toString();
     }

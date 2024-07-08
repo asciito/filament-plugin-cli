@@ -9,7 +9,12 @@ use Illuminate\Support\Str;
 
 class LowerCaseFormatter implements Formatters\Contracts\Formatter
 {
-    public function format(string $value): string
+    public function formatPlaceholder(string $placeholder): string
+    {
+        return Str::of($placeholder)->slug()->lower()->toString();
+    }
+
+    public function formatValue(string $value): string
     {
         return Str::of($value)->slug()->lower()->toString();
     }

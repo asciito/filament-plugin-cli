@@ -31,7 +31,12 @@ it('can use formatter', function () {
 
     $lowercaseFormatter = new class implements \App\Formatters\Contracts\Formatter
     {
-        public function format(string $value): string
+        public function formatPlaceholder(string $placeholder): string
+        {
+            return mb_convert_case($placeholder, MB_CASE_LOWER, 'UTF-8');
+        }
+
+        public function formatValue(string $value): string
         {
             return mb_convert_case($value, MB_CASE_LOWER, 'UTF-8');
         }
@@ -39,7 +44,12 @@ it('can use formatter', function () {
 
     $uppercaseFormatter = new class implements \App\Formatters\Contracts\Formatter
     {
-        public function format(string $value): string
+        public function formatPlaceholder(string $placeholder): string
+        {
+            return mb_convert_case($placeholder, MB_CASE_UPPER, 'UTF-8');
+        }
+
+        public function formatValue(string $value): string
         {
             return mb_convert_case($value, MB_CASE_UPPER, 'UTF-8');
         }

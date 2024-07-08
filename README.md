@@ -5,11 +5,17 @@
 </p>
 
 <p align="center">
+    <a href=https://packagist.org/packages/asciito/filament-plugin-cl">
+        <img src="https://poser.pugx.org/asciito/filament-plugin-cli/v" alt="Latest Stable Version">
+    </a>
     <a href="https://packagist.org/packages/asciito/filament-plugin-cli">
         <img src="https://poser.pugx.org/asciito/filament-plugin-cli/require/php" alt="PHP Version Require">
     </a>
     <a href="https://packagist.org/packages/asciito/filament-plugin-cli">
         <img src="https://poser.pugx.org/asciito/filament-plugin-cli/license.svg" alt="License">
+    </a>
+    <a href="https://packagist.org/packages/asciito/filament-plugin-cli">
+        <img src="https://poser.pugx.org/asciito/filament-plugin-cli/downloads" alt="Download">
     </a>
 </p>
 
@@ -20,7 +26,7 @@
 Inside your newly cloned/downloaded package from [asciito/filament-plugin](https://github.com/asciito/filament-plugin), run the following command:
 
 ```shell
-./plugin init [options] [--] <vendor> <package>
+./plugin init [options] [--] <vendor> <package> <author> <author-email>
 ```
 
 > Note: if no arguments are given to the command, this will prompt asking for the values.

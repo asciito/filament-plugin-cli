@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{Namespace}};
+
+class {{Class}} implements \{{RootNamespace}}\Formatters\Contracts\Formatter
+{
+    public function formatPlaceholder(string $placeholder): string
+    {
+        // TODO: Implement formatPlaceholder() method.
+    }
+
+    public function formatValue(string $value): string
+    {
+        // TODO: Implement formatValue() method.
+    }
+}
