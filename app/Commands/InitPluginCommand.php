@@ -25,7 +25,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
                             { package : The package\'s name (package-name) }
                             { author :  The author\'s name }
                             { author-email : The author\'s email }
-                            { --p|path : Path to the plugin directory }
+                            { --p|path= : Path to the plugin directory }
                             { --d|dont-delete-cli : Prevent deleting the CLI }';
 
     protected $description = 'Initialize the plugin development package';
