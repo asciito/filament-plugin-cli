@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 function removeTag(string $tag, string $content): string
 {
     return Str::of($content)
-        ->replaceMatches('/\n{0,1}<!--'.$tag.'-->.*?<!--\/'.$tag.'-->\n?/s', "")
+        ->replaceMatches('/\n{0,1}<!--'.$tag.'-->.*?<!--\/'.$tag.'-->\n?/s', '')
         ->trim()
         ->toString();
 }
@@ -50,9 +50,6 @@ function replacePlaceholder(
  *
  * zip() should only be used with unequal length inputs when you don’t care
  * about trailing, unmatched values from the longer iterables.
- *
- * @param array ...$arrays
- * @return array
  */
 function zip(array ...$arrays): array
 {

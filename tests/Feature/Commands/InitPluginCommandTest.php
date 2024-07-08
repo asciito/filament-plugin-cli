@@ -96,7 +96,7 @@ it('replace placeholders', function () {
             }
         }
         PHP)
-    ->and($this->getTestingDisk()->get('composer.json'))
+        ->and($this->getTestingDisk()->get('composer.json'))
         ->toBe(<<<'JSON'
         {
           "name": "asciito/example",
@@ -155,7 +155,7 @@ it('remove tags', function () {
     // Arrange
     \Illuminate\Support\Sleep::fake();
 
-    $this->getTestingDisk()->put('README.md', <<<MD
+    $this->getTestingDisk()->put('README.md', <<<'MD'
     # Lorem ipsum dolor sit amet
 
     <!--DELETE-->
@@ -226,7 +226,7 @@ it('remove tags', function () {
     \Illuminate\Support\Sleep::assertSleptTimes(1);
 
     expect($this->getTestingDisk()->get('README.md'))
-        ->toBe(<<<MD
+        ->toBe(<<<'MD'
         # Lorem ipsum dolor sit amet
 
         Consectetur adipiscing elit. Vivamus interdum

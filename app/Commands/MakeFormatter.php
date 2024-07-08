@@ -113,7 +113,6 @@ class MakeFormatter extends Command implements \Illuminate\Contracts\Console\Pro
     }
 
     /**
-     * @return int
      * @throws FileNotFoundException
      */
     public function handle(): int
@@ -218,8 +217,6 @@ class MakeFormatter extends Command implements \Illuminate\Contracts\Console\Pro
     }
 
     /**
-     * @param string $name
-     * @return string
      * @throws FileNotFoundException
      */
     protected function buildClass(string $name): string
