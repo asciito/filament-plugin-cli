@@ -2,8 +2,10 @@
 
 namespace App\Commands;
 
+use App\Formatters\EmailFormatter;
 use App\Formatters\LowerCaseFormatter;
 use App\Formatters\StudlyCaseFormatter;
+use App\Formatters\TitleFormatter;
 use App\Formatters\UpperCaseFormatter;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Facades\File;
@@ -32,6 +34,10 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
     protected string $packageReplacer = 'package';
 
+    protected string $authorReplacer = 'author';
+
+    protected string $authorEmailReplacer = 'author-email';
+
     protected array $excludedDirectories = [
         'build',
         'vendor',
@@ -42,10 +48,9 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         StudlyCaseFormatter::class,
         UpperCaseFormatter::class,
         LowerCaseFormatter::class,
+        EmailFormatter::class,
+        TitleFormatter::class,
     ];
-
-    // Pattern from: https://regex101.com/library/tQ0bN5
-    protected string $validationRuleForPromptValue = '/^(?!-)((?:[a-z0-9]+-?)+)(?<!-)$/';
 
     public function handle(): int
     {
@@ -89,7 +94,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
 
     protected function getAuthor(): string
     {
-        return Str::of($this->argument('author'))->slug(' ')->title();
+        return Str::of($this->argument('author'))->title();
     }
 
     protected function getAuthorEmail(): string
@@ -107,9 +112,14 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return $this->packageReplacer;
     }
 
-    protected function getValidationRuleForPromptValue(): string
+    protected function getAuthorReplacer(): string
     {
-        return $this->validationRuleForPromptValue;
+        return $this->authorReplacer;
+    }
+
+    protected function getAuthorEmailReplacer(): string
+    {
+        return $this->authorEmailReplacer;
     }
 
     protected function getReplacerFormatters(): array
@@ -122,6 +132,8 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return [
             $this->getVendorReplacer() => $this->getVendor(),
             $this->getPackageReplacer() => $this->getPackage(),
+            $this->getAuthorReplacer() => $this->getAuthor(),
+            $this->getAuthorEmailReplacer() => $this->getAuthorEmail(),
         ];
     }
 

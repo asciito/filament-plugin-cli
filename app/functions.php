@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 function removeTag(string $tag, string $content): string
 {
     return Str::of($content)
-        ->replaceMatches('/<!--'.$tag.'-->.*?<!--\/'.$tag.'-->/', '')
+        ->replaceMatches('/\n{0,1}<!--'.$tag.'-->.*?<!--\/'.$tag.'-->\n?/s', "")
         ->trim()
         ->toString();
 }
@@ -32,10 +33,9 @@ function replacePlaceholder(
     string $startWrapper = '',
     string $endWrapper = ''
 ): string {
-    $placeholders = is_string($placeholder) ? [$placeholder] : $placeholder;
-    $values = is_string($value) ? [$value] : $value;
+    $zippedPlaceholdersAndValues = zip(Arr::wrap($placeholder), Arr::wrap($value));
 
-    return collect(array_map(null, $placeholders, $values))
+    return collect($zippedPlaceholdersAndValues)
         ->filter(fn (array $arr) => ! is_null($arr[1]))
         ->map(fn (array $arr) => ['placeholder' => $arr[0], 'value' => $arr[1]])
         ->reduce(function (string $prev, array $container) use ($formatters, $startWrapper, $endWrapper) {
@@ -43,4 +43,20 @@ function replacePlaceholder(
 
             return $replacer->replaceOn($prev);
         }, $content);
+}
+
+/**
+ * Aggregates elements from each of the arrays
+ *
+ * zip() should only be used with unequal length inputs when you don’t care
+ * about trailing, unmatched values from the longer iterables.
+ *
+ * @param array ...$arrays
+ * @return array
+ */
+function zip(array ...$arrays): array
+{
+    return collect(array_map(null, ...$arrays))
+        ->filter(fn (array $arr) => ! in_array(null, $arr, true))
+        ->toArray();
 }
