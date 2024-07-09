@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -38,8 +40,6 @@ class InitCommand extends Command implements PromptsForMissingInput
 
     public function handle(): int
     {
-        $this->validateConfiguration();
-
         $files = $this->getFiles();
 
         foreach ($files as $file) {
@@ -55,15 +55,22 @@ class InitCommand extends Command implements PromptsForMissingInput
         return self::SUCCESS;
     }
 
-    protected function validateConfiguration(): void
+    protected function afterPromptingForMissingArguments(InputInterface $input, OutputInterface $output): void
     {
         $this->printConfiguration();
 
         if (! $this->confirm('Do you want to use this configuration') && $this->isInteractive()) {
-            $this->promptAgain();
+            $this->flushArguments();
 
-            $this->validateConfiguration();
+            $this->promptForMissingArguments($input, $output);
         }
+    }
+
+    protected function flushArguments(): void
+    {
+        collect($this->promptForMissingArgumentsUsing())
+            ->keys()
+            ->each(fn (string $argument) => $this->input->setArgument($argument, null));
     }
 
     protected function printConfiguration(): void
@@ -101,56 +108,14 @@ class InitCommand extends Command implements PromptsForMissingInput
         return $this->input->isInteractive();
     }
 
-    protected function promptAgain(): void
-    {
-        foreach ($this->promptForMissingArgumentsUsing() as $argument => $prompt) {
-            $this->input->setArgument($argument, $prompt());
-        }
-    }
-
     public function promptForMissingArgumentsUsing(): array
     {
         return [
-            'vendor' => fn () => $this->vendorPrompt(),
-            'package' => fn () => $this->packagePrompt(),
-            'author' => fn () => $this->authorPrompt(),
-            'author-email' => fn () => $this->authorEmailPrompt(),
+            'vendor' => 'What\'s the Vendor name',
+            'package' => 'What\'s the Package name',
+            'author' => 'What\'s the Author\'s name',
+            'author-email' => 'What\'s the Author\'s e-mail',
         ];
-    }
-
-    protected function vendorPrompt(): string
-    {
-        return $this->askAndRepeat('What\'s the Vendor name');
-    }
-
-    public function askAndRepeat(string $question, ?\Closure $validate = null): string
-    {
-        $value = $this->ask($question);
-
-        if ($validate instanceof \Closure) {
-            if (is_string($error = $validate(value: $value))) {
-                $this->error($error);
-
-                return $this->askAndRepeat($question, $validate);
-            }
-        }
-
-        return $value;
-    }
-
-    protected function packagePrompt(): string
-    {
-        return $this->askAndRepeat('What\'s the Package name');
-    }
-
-    protected function authorPrompt(): string
-    {
-        return $this->askAndRepeat('What\'s the Author\'s name');
-    }
-
-    protected function authorEmailPrompt(): string
-    {
-        return $this->askAndRepeat('What\'s the Author\'s e-mail');
     }
 
     protected function getFiles(): Finder
