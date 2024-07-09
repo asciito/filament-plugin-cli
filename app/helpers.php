@@ -25,8 +25,7 @@ use Illuminate\Support\Str;
 function removeTag(string $tag, string $content): string
 {
     return Str::of($content)
-        ->replaceMatches('/\n{0,1}<!--'.$tag.'-->.*?<!--\/'.$tag.'-->\n?/s', '')
-        ->trim()
+        ->replaceMatches('/\n*?<!--'.$tag.'-->.*?<!--\/'.$tag.'-->\n*?/s', '')
         ->toString();
 }
 
