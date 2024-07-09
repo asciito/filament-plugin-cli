@@ -30,26 +30,10 @@ class InitCommand extends Command implements PromptsForMissingInput
 
     protected $description = 'Initialize the plugin development package';
 
-    protected string $vendorReplacer = 'vendor';
-
-    protected string $packageReplacer = 'package';
-
-    protected string $authorReplacer = 'author';
-
-    protected string $authorEmailReplacer = 'author-email';
-
     protected array $excludedDirectories = [
         'build',
         'vendor',
         'node_modules',
-    ];
-
-    protected array $replacerFormatters = [
-        StudlyCaseFormatter::class,
-        UpperCaseFormatter::class,
-        LowerCaseFormatter::class,
-        EmailFormatter::class,
-        TitleFormatter::class,
     ];
 
     public function handle(): int
@@ -74,9 +58,150 @@ class InitCommand extends Command implements PromptsForMissingInput
     protected function initFile(SplFileInfo $file): void
     {
         $this
-            ->removeTags('DELETE', $file)
-            ->replacePlaceholdersInFile($file)
-            ->replacePlaceholdersInFileName($file);
+            ->replaceInFile($file)
+            ->renameFile($file);
+
+        Sleep::usleep(500_000);
+    }
+
+    protected function replaceInFile(SplFileInfo $file): static
+    {
+        $content = $file->getContents();
+
+        $this->replacePipe($content);
+
+        File::put($file->getRealPath(), $content);
+
+        return $this;
+    }
+
+    protected function renameFile(SplFileInfo $file): static
+    {
+        $values = [$this->getAuthor(), $this->getVendor(), $this->getPackage(), $this->getNamespace()];
+        $placeholders = ['author', 'vendor', 'package', 'namespace'];
+        $filename = $file->getBasename('.stub');
+
+        $this->replacePlaceholder(
+            placeholder: $placeholders,
+            value: $values,
+            content: $filename,
+            formatters: [
+                UpperCaseFormatter::class,
+                LowerCaseFormatter::class,
+                StudlyCaseFormatter::class,
+            ],
+            shouldWrap: false,
+        );
+
+        File::move($file->getRealPath(), join_paths($file->getPath(), $filename));
+
+        return $this;
+    }
+
+    protected function replacePipe(string &$content): static
+    {
+        return $this
+            ->replaceAuthor($content)
+            ->replaceAuthorEmail($content)
+            ->replaceVendor($content)
+            ->replacePackage($content)
+            ->replaceNamespace($content)
+            ->removeTags($content);
+    }
+
+    protected function replaceAuthor(string &$content): static
+    {
+        $this->replacePlaceholder(
+            placeholder: 'author',
+            value: $this->getAuthor(),
+            content: $content,
+            formatters: [
+                TitleFormatter::class,
+            ]
+        );
+
+        return $this;
+    }
+
+    protected function replaceAuthorEmail(string &$content): static
+    {
+        $this->replacePlaceholder(
+            placeholder: 'author-email',
+            value: $this->getAuthorEmail(),
+            content: $content,
+            formatters: [
+                EmailFormatter::class,
+            ]
+        );
+
+        return $this;
+    }
+
+    protected function replaceVendor(string &$content): static
+    {
+        $this->replacePlaceholder(
+            placeholder: 'vendor',
+            value: $this->getVendor(),
+            content: $content,
+            formatters: [
+                UpperCaseFormatter::class,
+                LowerCaseFormatter::class,
+                StudlyCaseFormatter::class,
+            ]
+        );
+
+        return $this;
+    }
+
+    protected function replacePackage(string &$content): static
+    {
+        $this->replacePlaceholder(
+            placeholder: 'package',
+            value: $this->getPackage(),
+            content: $content,
+            formatters: [
+                UpperCaseFormatter::class,
+                LowerCaseFormatter::class,
+                StudlyCaseFormatter::class,
+            ]
+        );
+
+        return $this;
+    }
+
+    protected function replaceNamespace(string &$content): static
+    {
+        $this->replacePlaceholder(
+            placeholder: ['namespace'],
+            value: $this->getNamespace(),
+            content: $content,
+            formatters: [
+                UpperCaseFormatter::class,
+                LowerCaseFormatter::class,
+                StudlyCaseFormatter::class,
+            ]
+        );
+
+        return $this;
+    }
+
+    protected function removeTags(string &$content): static
+    {
+        $content = \App\removeTag('DELETE', $content);
+
+        return $this;
+    }
+
+    protected function replacePlaceholder(array|string $placeholder, array|string $value, string &$content, array $formatters, bool $shouldWrap = true): void
+    {
+        $content = \App\replacePlaceholder(
+            placeholder: $placeholder,
+            value: $value,
+            content: $content,
+            formatters: $formatters,
+            startWrapper: $shouldWrap ? '{{' : '',
+            endWrapper: $shouldWrap ? '}}' : '',
+        );
     }
 
     protected function getExcludedDirectories(): array
@@ -94,6 +219,15 @@ class InitCommand extends Command implements PromptsForMissingInput
         return Str::slug($this->argument('package'));
     }
 
+    protected function getNamespace(bool $scape = false): string
+    {
+        $vendor = Str::studly($this->getVendor());
+        $package = Str::studly($this->getPackage());
+        $separator = $scape ? '\\\\' : '\\';
+
+        return "{$vendor}{$separator}{$package}";
+    }
+
     protected function getAuthor(): string
     {
         return Str::of($this->argument('author'))->title();
@@ -102,41 +236,6 @@ class InitCommand extends Command implements PromptsForMissingInput
     protected function getAuthorEmail(): string
     {
         return Str::of($this->argument('author-email'));
-    }
-
-    protected function getVendorReplacer(): string
-    {
-        return $this->vendorReplacer;
-    }
-
-    protected function getPackageReplacer(): string
-    {
-        return $this->packageReplacer;
-    }
-
-    protected function getAuthorReplacer(): string
-    {
-        return $this->authorReplacer;
-    }
-
-    protected function getAuthorEmailReplacer(): string
-    {
-        return $this->authorEmailReplacer;
-    }
-
-    protected function getReplacerFormatters(): array
-    {
-        return $this->replacerFormatters;
-    }
-
-    protected function getReplacersAndValues(): array
-    {
-        return [
-            $this->getVendorReplacer() => $this->getVendor(),
-            $this->getPackageReplacer() => $this->getPackage(),
-            $this->getAuthorReplacer() => $this->getAuthor(),
-            $this->getAuthorEmailReplacer() => $this->getAuthorEmail(),
-        ];
     }
 
     protected function getFiles(): Finder
@@ -198,31 +297,6 @@ class InitCommand extends Command implements PromptsForMissingInput
         $content = $this->replacePlaceholders($file->getBasename('.stub'), false);
 
         File::move($file->getRealPath(), join_paths($file->getPath(), $content));
-
-        return $this;
-    }
-
-    protected function replacePlaceholders(string $content, bool $shouldWrap = true): string
-    {
-        return \App\replacePlaceholder(
-            placeholder: array_keys($this->getReplacersAndValues()),
-            value: array_values($this->getReplacersAndValues()),
-            content: $content,
-            formatters: $this->getReplacerFormatters(),
-            startWrapper: $shouldWrap ? '{{' : '',
-            endWrapper: $shouldWrap ? '}}' : '',
-        );
-    }
-
-    protected function removeTags(array|string $tags, SplFileInfo $file): static
-    {
-        $content = collect($tags)
-            ->reduce(
-                fn (string $content, string $tag) => \App\removeTag($tag, $content),
-                $file->getContents()
-            );
-
-        File::put($file->getRealPath(), $content);
 
         return $this;
     }

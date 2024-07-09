@@ -17,10 +17,10 @@ it('replace placeholders', function () {
 
     declare(strict_types=1);
 
-    namespace {{Vendor}}\{{Package}};
+    namespace {{Namespace}};
 
-    class SampleClass extends \{{Vendor}}\{{Package}}\Core\AbstractTool implements \{{Vendor}}\{{Package}}\Contracts\InterfaceTool {
-        use \{{Vendor}}\{{Package}}\Concerns\TraitTool;
+    class SampleClass extends \{{Namespace}}\Core\AbstractTool implements \{{Namespace}}\Contracts\InterfaceTool {
+        use \{{Namespace}}\Concerns\TraitTool;
 
         const {{PACKAGE}}_CONSTANT = '{{VENDOR}}_VALUE';
 
