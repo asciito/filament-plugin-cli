@@ -55,6 +55,126 @@ class InitCommand extends Command implements PromptsForMissingInput
         return self::SUCCESS;
     }
 
+    protected function validateConfiguration(): void
+    {
+        $this->printConfiguration();
+
+        if (! $this->confirm('Do you want to use this configuration') && $this->isInteractive()) {
+            $this->promptAgain();
+
+            $this->validateConfiguration();
+        }
+    }
+
+    protected function printConfiguration(): void
+    {
+        $this->line(<<<CONFIG
+        Author:        {$this->getAuthor()}
+        Author E-mail: {$this->getAuthorEmail()}
+        Vendor:        {$this->getVendor()}
+        Package:       {$this->getPackage()}
+        CONFIG);
+    }
+
+    protected function getAuthor(): string
+    {
+        return Str::of($this->argument('author'))->title();
+    }
+
+    protected function getAuthorEmail(): string
+    {
+        return Str::of($this->argument('author-email'));
+    }
+
+    protected function getVendor(): string
+    {
+        return Str::slug($this->argument('vendor'));
+    }
+
+    protected function getPackage(): string
+    {
+        return Str::slug($this->argument('package'));
+    }
+
+    public function isInteractive(): bool
+    {
+        return $this->input->isInteractive();
+    }
+
+    protected function promptAgain(): void
+    {
+        foreach ($this->promptForMissingArgumentsUsing() as $argument => $prompt) {
+            $this->input->setArgument($argument, $prompt());
+        }
+    }
+
+    public function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'vendor' => fn () => $this->vendorPrompt(),
+            'package' => fn () => $this->packagePrompt(),
+            'author' => fn () => $this->authorPrompt(),
+            'author-email' => fn () => $this->authorEmailPrompt(),
+        ];
+    }
+
+    protected function vendorPrompt(): string
+    {
+        return $this->askAndRepeat('What\'s the Vendor name');
+    }
+
+    public function askAndRepeat(string $question, ?\Closure $validate = null): string
+    {
+        $value = $this->ask($question);
+
+        if ($validate instanceof \Closure) {
+            if (is_string($error = $validate(value: $value))) {
+                $this->error($error);
+
+                return $this->askAndRepeat($question, $validate);
+            }
+        }
+
+        return $value;
+    }
+
+    protected function packagePrompt(): string
+    {
+        return $this->askAndRepeat('What\'s the Package name');
+    }
+
+    protected function authorPrompt(): string
+    {
+        return $this->askAndRepeat('What\'s the Author\'s name');
+    }
+
+    protected function authorEmailPrompt(): string
+    {
+        return $this->askAndRepeat('What\'s the Author\'s e-mail');
+    }
+
+    protected function getFiles(): Finder
+    {
+        $finder = (new Finder)
+            ->in($this->getPackageDirectory())
+            ->files()
+            ->exclude($this->getExcludedDirectories());
+
+        return $finder;
+    }
+
+    protected function getPackageDirectory(): array
+    {
+        return [
+            $this->option('path') ?: getcwd(),
+        ];
+    }
+
+    protected function getExcludedDirectories(): array
+    {
+        return $this->excludedDirectories;
+    }
+
     protected function initFile(SplFileInfo $file): void
     {
         $this
@@ -62,17 +182,6 @@ class InitCommand extends Command implements PromptsForMissingInput
             ->renameFile($file);
 
         Sleep::usleep(500_000);
-    }
-
-    protected function replaceInFile(SplFileInfo $file): static
-    {
-        $content = $file->getContents();
-
-        $this->replacePipe($content);
-
-        File::put($file->getRealPath(), $content);
-
-        return $this;
     }
 
     protected function renameFile(SplFileInfo $file): static
@@ -98,6 +207,38 @@ class InitCommand extends Command implements PromptsForMissingInput
         return $this;
     }
 
+    protected function getNamespace(bool $scape = false): string
+    {
+        $vendor = Str::studly($this->getVendor());
+        $package = Str::studly($this->getPackage());
+        $separator = $scape ? '\\\\' : '\\';
+
+        return "{$vendor}{$separator}{$package}";
+    }
+
+    protected function replacePlaceholder(array|string $placeholder, array|string $value, string &$content, array $formatters, bool $shouldWrap = true): void
+    {
+        $content = \App\replacePlaceholder(
+            placeholder: $placeholder,
+            value: $value,
+            content: $content,
+            formatters: $formatters,
+            startWrapper: $shouldWrap ? '{{' : '',
+            endWrapper: $shouldWrap ? '}}' : '',
+        );
+    }
+
+    protected function replaceInFile(SplFileInfo $file): static
+    {
+        $content = $file->getContents();
+
+        $this->replacePipe($content);
+
+        File::put($file->getRealPath(), $content);
+
+        return $this;
+    }
+
     protected function replacePipe(string &$content): static
     {
         return $this
@@ -109,39 +250,18 @@ class InitCommand extends Command implements PromptsForMissingInput
             ->removeTags($content);
     }
 
-    protected function replaceAuthor(string &$content): static
+    protected function removeTags(string &$content): static
     {
-        $this->replacePlaceholder(
-            placeholder: 'author',
-            value: $this->getAuthor(),
-            content: $content,
-            formatters: [
-                TitleFormatter::class,
-            ]
-        );
+        $content = \App\removeTag('DELETE', $content);
 
         return $this;
     }
 
-    protected function replaceAuthorEmail(string &$content): static
+    protected function replaceNamespace(string &$content): static
     {
         $this->replacePlaceholder(
-            placeholder: 'author-email',
-            value: $this->getAuthorEmail(),
-            content: $content,
-            formatters: [
-                EmailFormatter::class,
-            ]
-        );
-
-        return $this;
-    }
-
-    protected function replaceVendor(string &$content): static
-    {
-        $this->replacePlaceholder(
-            placeholder: 'vendor',
-            value: $this->getVendor(),
+            placeholder: ['namespace'],
+            value: $this->getNamespace(),
             content: $content,
             formatters: [
                 UpperCaseFormatter::class,
@@ -169,11 +289,11 @@ class InitCommand extends Command implements PromptsForMissingInput
         return $this;
     }
 
-    protected function replaceNamespace(string &$content): static
+    protected function replaceVendor(string &$content): static
     {
         $this->replacePlaceholder(
-            placeholder: ['namespace'],
-            value: $this->getNamespace(),
+            placeholder: 'vendor',
+            value: $this->getVendor(),
             content: $content,
             formatters: [
                 UpperCaseFormatter::class,
@@ -185,95 +305,47 @@ class InitCommand extends Command implements PromptsForMissingInput
         return $this;
     }
 
-    protected function removeTags(string &$content): static
+    protected function replaceAuthorEmail(string &$content): static
     {
-        $content = \App\removeTag('DELETE', $content);
+        $this->replacePlaceholder(
+            placeholder: 'author-email',
+            value: $this->getAuthorEmail(),
+            content: $content,
+            formatters: [
+                EmailFormatter::class,
+            ]
+        );
 
         return $this;
     }
 
-    protected function replacePlaceholder(array|string $placeholder, array|string $value, string &$content, array $formatters, bool $shouldWrap = true): void
+    protected function replaceAuthor(string &$content): static
     {
-        $content = \App\replacePlaceholder(
-            placeholder: $placeholder,
-            value: $value,
+        $this->replacePlaceholder(
+            placeholder: 'author',
+            value: $this->getAuthor(),
             content: $content,
-            formatters: $formatters,
-            startWrapper: $shouldWrap ? '{{' : '',
-            endWrapper: $shouldWrap ? '}}' : '',
+            formatters: [
+                TitleFormatter::class,
+            ]
         );
+
+        return $this;
     }
 
-    protected function getExcludedDirectories(): array
+    protected function deleteCli(): bool
     {
-        return $this->excludedDirectories;
-    }
+        $status = spin(function () {
+            $file = \Phar::running(false);
 
-    protected function getVendor(): string
-    {
-        return Str::slug($this->argument('vendor'));
-    }
+            throw_if(empty($file), new \PharException('The file is not a phar file, please compile the CLI first'));
 
-    protected function getPackage(): string
-    {
-        return Str::slug($this->argument('package'));
-    }
+            Sleep::sleep(1);
 
-    protected function getNamespace(bool $scape = false): string
-    {
-        $vendor = Str::studly($this->getVendor());
-        $package = Str::studly($this->getPackage());
-        $separator = $scape ? '\\\\' : '\\';
+            return unlink($file);
+        }, 'Deleting CLI');
 
-        return "{$vendor}{$separator}{$package}";
-    }
-
-    protected function getAuthor(): string
-    {
-        return Str::of($this->argument('author'))->title();
-    }
-
-    protected function getAuthorEmail(): string
-    {
-        return Str::of($this->argument('author-email'));
-    }
-
-    protected function getFiles(): Finder
-    {
-        $finder = (new Finder)
-            ->in($this->getPackageDirectory())
-            ->files()
-            ->exclude($this->getExcludedDirectories());
-
-        return $finder;
-    }
-
-    protected function validateConfiguration(): void
-    {
-        $this->printConfiguration();
-
-        if (! $this->confirm('Do you want to use this configuration') && $this->isInteractive()) {
-            $this->promptAgain();
-
-            $this->validateConfiguration();
-        }
-    }
-
-    protected function promptAgain(): void
-    {
-        foreach ($this->promptForMissingArgumentsUsing() as $argument => $prompt) {
-            $this->input->setArgument($argument, $prompt());
-        }
-    }
-
-    protected function printConfiguration(): void
-    {
-        $this->line(<<<CONFIG
-        Author:        {$this->getAuthor()}
-        Author E-mail: {$this->getAuthorEmail()}
-        Vendor:        {$this->getVendor()}
-        Package:       {$this->getPackage()}
-        CONFIG);
+        return $status;
     }
 
     protected function replacePlaceholdersInFile(SplFileInfo $file): static
@@ -299,77 +371,5 @@ class InitCommand extends Command implements PromptsForMissingInput
         File::move($file->getRealPath(), join_paths($file->getPath(), $content));
 
         return $this;
-    }
-
-    protected function deleteCli(): bool
-    {
-        $status = spin(function () {
-            $file = \Phar::running(false);
-
-            throw_if(empty($file), new \PharException('The file is not a phar file, please compile the CLI first'));
-
-            Sleep::sleep(1);
-
-            return unlink($file);
-        }, 'Deleting CLI');
-
-        return $status;
-    }
-
-    protected function vendorPrompt(): string
-    {
-        return $this->askAndRepeat('What\'s the Vendor name');
-    }
-
-    protected function packagePrompt(): string
-    {
-        return $this->askAndRepeat('What\'s the Package name');
-    }
-
-    protected function authorPrompt(): string
-    {
-        return $this->askAndRepeat('What\'s the Author\'s name');
-    }
-
-    protected function authorEmailPrompt(): string
-    {
-        return $this->askAndRepeat('What\'s the Author\'s e-mail');
-    }
-
-    public function askAndRepeat(string $question, ?\Closure $validate = null): string
-    {
-        $value = $this->ask($question);
-
-        if ($validate instanceof \Closure) {
-            if (is_string($error = $validate(value: $value))) {
-                $this->error($error);
-
-                return $this->askAndRepeat($question, $validate);
-            }
-        }
-
-        return $value;
-    }
-
-    public function promptForMissingArgumentsUsing(): array
-    {
-        return [
-            'vendor' => fn () => $this->vendorPrompt(),
-            'package' => fn () => $this->packagePrompt(),
-            'author' => fn () => $this->authorPrompt(),
-            'author-email' => fn () => $this->authorEmailPrompt(),
-        ];
-    }
-
-    protected function getPackageDirectory(): array
-    {
-        return [
-            $this->option('path') ?: getcwd(),
-        ];
-    }
-
-    public function isInteractive(): bool
-    {
-        return $this->input->isInteractive();
     }
 }
