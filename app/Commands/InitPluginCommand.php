@@ -62,7 +62,9 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
             $this->initFile($file);
         }
 
-        if (! $this->hasOption('dont-delete-cli') && $this->confirm('Do you want to delete the CLI')) {
+        if (! $this->hasOption('dont-delete-cli') &&
+            $this->isInteractive() &&
+            $this->confirm('Do you want to delete the CLI')) {
             $this->deleteCli();
         }
 
@@ -151,7 +153,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
     {
         $this->printConfiguration();
 
-        if (! $this->confirm('Do you want to use this configuration')) {
+        if (! $this->confirm('Do you want to use this configuration') && $this->isInteractive()) {
             $this->promptAgain();
 
             $this->validateConfiguration();
@@ -290,5 +292,10 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
         return [
             $this->option('path') ?: getcwd(),
         ];
+    }
+
+    public function isInteractive(): bool
+    {
+        return $this->input->isInteractive();
     }
 }

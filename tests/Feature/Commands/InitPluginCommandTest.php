@@ -6,7 +6,7 @@ beforeEach(fn () => $this->commandConfig = [
     'author' => 'John Doe',
     'author-email' => 'john@doe.com',
     '--path' => $this->disk->path(''),
-    '--dont-delete-cli' => true,
+    '--no-interaction',
 ]);
 
 it('replace placeholders', function () {
