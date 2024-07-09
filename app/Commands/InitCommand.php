@@ -120,12 +120,10 @@ class InitCommand extends Command implements PromptsForMissingInput
 
     protected function getFiles(): Finder
     {
-        $finder = (new Finder)
+        return (new Finder)
             ->in($this->getPackageDirectory())
             ->files()
             ->exclude($this->getExcludedDirectories());
-
-        return $finder;
     }
 
     protected function getPackageDirectory(): array
