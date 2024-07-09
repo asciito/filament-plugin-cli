@@ -121,12 +121,12 @@ class InitCommand extends Command implements PromptsForMissingInput
     protected function getFiles(): Finder
     {
         return (new Finder)
-            ->in($this->getPackageDirectory())
+            ->in($this->getPackageDirectories())
             ->files()
             ->exclude($this->getExcludedDirectories());
     }
 
-    protected function getPackageDirectory(): array
+    protected function getPackageDirectories(): array
     {
         return [
             $this->option('path') ?: getcwd(),
@@ -309,30 +309,5 @@ class InitCommand extends Command implements PromptsForMissingInput
         }, 'Deleting CLI');
 
         return $status;
-    }
-
-    protected function replacePlaceholdersInFile(SplFileInfo $file): static
-    {
-        spin(
-            function () use ($file) {
-                $content = File::get($file->getRealPath());
-
-                File::put($file->getRealPath(), $this->replacePlaceholders($content));
-
-                Sleep::usleep(500_000);
-            },
-            'Replacing values in file '.$file->getBasename(),
-        );
-
-        return $this;
-    }
-
-    protected function replacePlaceholdersInFileName(SplFileInfo $file): static
-    {
-        $content = $this->replacePlaceholders($file->getBasename('.stub'), false);
-
-        File::move($file->getRealPath(), join_paths($file->getPath(), $content));
-
-        return $this;
     }
 }
