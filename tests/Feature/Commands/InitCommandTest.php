@@ -17,10 +17,10 @@ it('replace placeholders', function () {
 
     declare(strict_types=1);
 
-    namespace {{Vendor}}\{{Package}};
+    namespace {{Namespace}};
 
-    class SampleClass extends \{{Vendor}}\{{Package}}\Core\AbstractTool implements \{{Vendor}}\{{Package}}\Contracts\InterfaceTool {
-        use \{{Vendor}}\{{Package}}\Concerns\TraitTool;
+    class SampleClass extends \{{Namespace}}\Core\AbstractTool implements \{{Namespace}}\Contracts\InterfaceTool {
+        use \{{Namespace}}\Concerns\TraitTool;
 
         const {{PACKAGE}}_CONSTANT = '{{VENDOR}}_VALUE';
 
@@ -133,9 +133,7 @@ it('replace file name', function () {
     $this->getTestingDisk()->put('VendorFile.txt', '');
     $this->getTestingDisk()->put('PackageAuthorFile.txt', '');
 
-    $this->artisan('init', $this->commandConfig)
-        ->expectsConfirmation('Do you want to use this configuration', 'yes')
-        ->assertSuccessful();
+    $this->artisan('init', $this->commandConfig)->assertSuccessful();
 
     \Illuminate\Support\Sleep::assertSleptTimes(3);
 
@@ -219,8 +217,7 @@ it('remove tags', function () {
     MD);
 
     // Act
-    $this->artisan('init', $this->commandConfig)
-        ->expectsConfirmation('Do you want to use this configuration', 'yes');
+    $this->artisan('init', $this->commandConfig);
 
     \Illuminate\Support\Sleep::assertSleptTimes(1);
 
