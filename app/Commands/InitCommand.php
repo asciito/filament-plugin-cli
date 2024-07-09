@@ -18,7 +18,7 @@ use Symfony\Component\Finder\SplFileInfo;
 use function Illuminate\Filesystem\join_paths;
 use function Laravel\Prompts\spin;
 
-class InitPluginCommand extends Command implements PromptsForMissingInput
+class InitCommand extends Command implements PromptsForMissingInput
 {
     protected $signature = 'init
                             { vendor : The vendor\'s name (vendor-name) }
