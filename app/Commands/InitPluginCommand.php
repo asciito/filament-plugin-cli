@@ -62,7 +62,7 @@ class InitPluginCommand extends Command implements PromptsForMissingInput
             $this->initFile($file);
         }
 
-        if (! $this->option('dont-delete-cli') && $this->confirm('Do you want to delete the CLI')) {
+        if (! $this->hasOption('dont-delete-cli') && $this->confirm('Do you want to delete the CLI')) {
             $this->deleteCli();
         }
 

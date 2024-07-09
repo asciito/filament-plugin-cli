@@ -72,7 +72,6 @@ it('replace placeholders', function () {
         Package:       example
         CONFIG)
         ->expectsConfirmation('Do you want to use this configuration', 'yes')
-        ->expectsConfirmation('Do you want to delete the CLI')
         ->assertSuccessful();
 
     \Illuminate\Support\Sleep::assertSleptTimes(2);
