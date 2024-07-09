@@ -11,6 +11,8 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
+use Laravel\Prompts\ConfirmPrompt;
+use Laravel\Prompts\TextPrompt;
 use LaravelZero\Framework\Commands\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -37,6 +39,15 @@ class InitCommand extends Command implements PromptsForMissingInput
         'vendor',
         'node_modules',
     ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        TextPrompt::fallbackUsing(fn (TextPrompt $prompt) => $this->ask($prompt->label, $prompt->default));
+
+        ConfirmPrompt::fallbackUsing(fn (ConfirmPrompt $prompt) => $this->confirm($prompt->label, $prompt->default));
+    }
 
     public function handle(): int
     {
@@ -111,10 +122,10 @@ class InitCommand extends Command implements PromptsForMissingInput
     public function promptForMissingArgumentsUsing(): array
     {
         return [
-            'vendor' => 'What\'s the Vendor name',
-            'package' => 'What\'s the Package name',
-            'author' => 'What\'s the Author\'s name',
-            'author-email' => 'What\'s the Author\'s e-mail',
+            'vendor' => ['What\'s the Vendor name', 'vendor'],
+            'package' => ['What\'s the Package name', 'package'],
+            'author' => ['What\'s the Author\'s name', 'John Doe'],
+            'author-email' => ['What\'s the Author\'s e-mail', 'john@doe.com'],
         ];
     }
 

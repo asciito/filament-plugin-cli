@@ -133,9 +133,7 @@ it('replace file name', function () {
     $this->getTestingDisk()->put('VendorFile.txt', '');
     $this->getTestingDisk()->put('PackageAuthorFile.txt', '');
 
-    $this->artisan('init', $this->commandConfig)
-        ->expectsConfirmation('Do you want to use this configuration', 'yes')
-        ->assertSuccessful();
+    $this->artisan('init', $this->commandConfig)->assertSuccessful();
 
     \Illuminate\Support\Sleep::assertSleptTimes(3);
 
@@ -219,8 +217,7 @@ it('remove tags', function () {
     MD);
 
     // Act
-    $this->artisan('init', $this->commandConfig)
-        ->expectsConfirmation('Do you want to use this configuration', 'yes');
+    $this->artisan('init', $this->commandConfig);
 
     \Illuminate\Support\Sleep::assertSleptTimes(1);
 
