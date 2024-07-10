@@ -29,6 +29,7 @@ class InitCommand extends Command implements PromptsForMissingInput
                             { package : The package\'s name (package-name) }
                             { author :  The author\'s name }
                             { author-email : The author\'s email }
+                            { description : The plugin description }
                             { --p|path= : Path to the plugin directory }
                             { --d|dont-delete-cli : Prevent deleting the CLI }';
 
@@ -91,6 +92,7 @@ class InitCommand extends Command implements PromptsForMissingInput
         Author E-mail: {$this->getAuthorEmail()}
         Vendor:        {$this->getVendor()}
         Package:       {$this->getPackage()}
+        Description:   {$this->getPluginDescription()}
         CONFIG);
     }
 
@@ -102,6 +104,11 @@ class InitCommand extends Command implements PromptsForMissingInput
     protected function getAuthorEmail(): string
     {
         return Str::of($this->argument('author-email'));
+    }
+
+    protected function getPluginDescription(): string
+    {
+        return $this->argument('description');
     }
 
     protected function getVendor(): string
@@ -126,6 +133,7 @@ class InitCommand extends Command implements PromptsForMissingInput
             'package' => ['What\'s the Package name', 'package'],
             'author' => ['What\'s the Author\'s name', 'John Doe'],
             'author-email' => ['What\'s the Author\'s e-mail', 'john@doe.com'],
+            'description' => ['Describe your plugin', 'Lorem ipsum dolor it'],
         ];
     }
 
@@ -190,7 +198,7 @@ class InitCommand extends Command implements PromptsForMissingInput
         return "{$vendor}{$separator}{$package}";
     }
 
-    protected function replacePlaceholder(array|string $placeholder, array|string $value, string &$content, array $formatters, bool $shouldWrap = true): void
+    protected function replacePlaceholder(array|string $placeholder, array|string $value, string &$content, array $formatters = [], bool $shouldWrap = true): void
     {
         $content = \App\replacePlaceholder(
             placeholder: $placeholder,
@@ -218,6 +226,7 @@ class InitCommand extends Command implements PromptsForMissingInput
         return $this
             ->replaceAuthor($content)
             ->replaceAuthorEmail($content)
+            ->replaceDescription($content)
             ->replaceVendor($content)
             ->replacePackage($content)
             ->replaceNamespace($content)
@@ -302,6 +311,17 @@ class InitCommand extends Command implements PromptsForMissingInput
             formatters: [
                 TitleFormatter::class,
             ]
+        );
+
+        return $this;
+    }
+
+    protected function replaceDescription(string &$content): static
+    {
+        $this->replacePlaceholder(
+            placeholder: 'description',
+            value: $this->getPluginDescription(),
+            content: $content,
         );
 
         return $this;
