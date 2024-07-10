@@ -266,6 +266,7 @@ class InitCommand extends Command implements PromptsForMissingInput
                 UpperCaseFormatter::class,
                 LowerCaseFormatter::class,
                 StudlyCaseFormatter::class,
+                TitleFormatter::class,
             ]
         );
 
@@ -282,6 +283,7 @@ class InitCommand extends Command implements PromptsForMissingInput
                 UpperCaseFormatter::class,
                 LowerCaseFormatter::class,
                 StudlyCaseFormatter::class,
+                TitleFormatter::class,
             ]
         );
 
