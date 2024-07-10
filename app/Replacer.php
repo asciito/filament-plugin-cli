@@ -36,7 +36,7 @@ class Replacer
     public function replaceOn(string $content): string
     {
         if (empty($this->getFormatters())) {
-            return str_replace($this->getPlaceholder(), $this->getValue(), $content);
+            return str_replace($this->wrapPlaceholder($this->getPlaceholder()), $this->getValue(), $content);
         }
 
         foreach ($this->getFormatters() as $formatter) {

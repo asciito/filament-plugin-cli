@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace {{Namespace}};
+namespace {{namespace}};
 
-class {{Class}} implements \{{RootNamespace}}\Formatters\Contracts\Formatter
+class {{class}} implements \{{rootNamespace}}\Contracts\Formatter
 {
     public function formatPlaceholder(string $placeholder): string
     {
