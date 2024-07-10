@@ -5,6 +5,7 @@ beforeEach(fn () => $this->commandConfig = [
     'package' => 'sample',
     'author' => 'John Doe',
     'author-email' => 'john@doe.com',
+    'description' => 'Lorem ipsum dolor it sa, des quan tu mit lamp',
     '--path' => $this->disk->path(''),
     '--no-interaction',
 ]);
@@ -34,7 +35,7 @@ it('replace placeholders', function () {
     $this->getTestingDisk()->put('composer.json', <<<'JSON'
     {
       "name": "{{vendor}}/{{package}}",
-      "description": "Lorem ipsum dolor it {{Vendor}} sa it {{Package}}, des quan tu mit lamp {{author:title}}",
+      "description": "{{description}}",
       "type": "project",
       "authors": [
         {
@@ -65,11 +66,13 @@ it('replace placeholders', function () {
         ->expectsQuestion('What\'s the Package name', 'example')
         ->expectsQuestion('What\'s the Author\'s name', 'Ayax Córdova')
         ->expectsQuestion('What\'s the Author\'s e-mail', 'email@example.com')
+        ->expectsQuestion('Describe your plugin', 'Lorem ipsum dolor it sa, des quan tu mit lamp')
         ->expectsOutput(<<<'CONFIG'
         Author:        Ayax Córdova
         Author E-mail: email@example.com
         Vendor:        asciito
         Package:       example
+        Description:   Lorem ipsum dolor it sa, des quan tu mit lamp
         CONFIG)
         ->expectsConfirmation('Do you want to use this configuration', 'yes')
         ->assertSuccessful();
@@ -99,7 +102,7 @@ it('replace placeholders', function () {
         ->toBe(<<<'JSON'
         {
           "name": "asciito/example",
-          "description": "Lorem ipsum dolor it Asciito sa it Example, des quan tu mit lamp Ayax Córdova",
+          "description": "Lorem ipsum dolor it sa, des quan tu mit lamp",
           "type": "project",
           "authors": [
             {
