@@ -75,6 +75,8 @@ it('replace placeholders', function () {
         Description:   Lorem ipsum dolor it sa, des quan tu mit lamp
         CONFIG)
         ->expectsConfirmation('Do you want to use this configuration', 'yes')
+        ->expectsOutputToContain('Replacing placeholders in file [SampleClass.php]')
+        ->expectsOutputToContain('Replacing placeholders in file [composer.json]')
         ->assertSuccessful();
 
     \Illuminate\Support\Sleep::assertSleptTimes(2);
@@ -220,7 +222,8 @@ it('remove tags', function () {
     MD);
 
     // Act
-    $this->artisan('init', $this->commandConfig);
+    $this->artisan('init', $this->commandConfig)
+        ->expectsOutputToContain('Replacing placeholders in file [README.md]');
 
     \Illuminate\Support\Sleep::assertSleptTimes(1);
 

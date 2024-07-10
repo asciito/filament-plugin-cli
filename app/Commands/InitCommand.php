@@ -55,7 +55,10 @@ class InitCommand extends Command implements PromptsForMissingInput
         $files = $this->getFiles();
 
         foreach ($files as $file) {
-            $this->initFile($file);
+            spin(
+                fn () => $this->initFile($file),
+                "Replacing placeholders in file [{$file->getBasename()}]",
+            );
         }
 
         if (! $this->hasOption('dont-delete-cli') &&
