@@ -15,6 +15,11 @@ class TitleFormatter implements \App\Formatters\Contracts\Formatter
 
     public function formatValue(string $value): string
     {
-        return Str::of($value)->title()->toString();
+        /**
+         * `[:punct:]` Matches characters that are not whitespace, letters or
+         * numbers. The double square brackets is not a typo, POSIX notation
+         * demands it.
+         */
+        return Str::of($value)->replaceMatches('/[[:punct:]\s]\s?/', ' ')->title()->toString();
     }
 }

@@ -3,8 +3,8 @@
 beforeEach(fn () => $this->commandConfig = [
     'vendor' => 'asciito',
     'package' => 'sample',
-    'author' => 'John Doe',
-    'author-email' => 'john@doe.com',
+    'author' => 'Ayax Córdova',
+    'author-email' => 'example@mail.com',
     'description' => 'Lorem ipsum dolor it sa, des quan tu mit lamp',
     '--path' => $this->disk->path(''),
     '--no-interaction',
@@ -65,11 +65,11 @@ it('replace placeholders', function () {
         ->expectsQuestion('What\'s the Vendor name', 'asciito')
         ->expectsQuestion('What\'s the Package name', 'example')
         ->expectsQuestion('What\'s the Author\'s name', 'Ayax Córdova')
-        ->expectsQuestion('What\'s the Author\'s e-mail', 'email@example.com')
+        ->expectsQuestion('What\'s the Author\'s e-mail', 'example@mail.com')
         ->expectsQuestion('Describe your plugin', 'Lorem ipsum dolor it sa, des quan tu mit lamp')
         ->expectsOutput(<<<'CONFIG'
         Author:        Ayax Córdova
-        Author E-mail: email@example.com
+        Author E-mail: example@mail.com
         Vendor:        asciito
         Package:       example
         Description:   Lorem ipsum dolor it sa, des quan tu mit lamp
@@ -109,7 +109,7 @@ it('replace placeholders', function () {
           "authors": [
             {
               "name": "Ayax Córdova",
-              "email": "email@example.com"
+              "email": "example@mail.com"
             }
           ],
           "autoload": {
@@ -149,7 +149,7 @@ it('replace file name', function () {
         ->exists('AsciitoFile.txt')
         ->toBeTrue()
         ->and($this->getTestingDisk())
-        ->exists('SampleJohnDoeFile.txt')
+        ->exists('SampleAyaxCórdovaFile.txt')
         ->toBeTrue();
 });
 
