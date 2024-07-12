@@ -153,6 +153,25 @@ it('replace file name', function () {
         ->toBeTrue();
 });
 
+it('replace nothing', function () {
+    \Illuminate\Support\Sleep::fake();
+
+    $this->getTestingDisk()->put('phpunit.xml', '');
+    $this->getTestingDisk()->put('package.json', '');
+    $this->getTestingDisk()->put('testbench.yaml', '');
+    $this->getTestingDisk()->put('ExampleClass.php', '');
+
+    $this->artisan('init', [...$this->commandConfig, '--exclude' => 'ExampleClass.php'])
+        ->doesntExpectOutputToContain('Replacing placeholders in file [phpunit.xml]')
+        ->doesntExpectOutputToContain('Replacing placeholders in file [package.json]')
+        ->doesntExpectOutputToContain('Replacing placeholders in file [testbench.yaml]')
+        ->assertSuccessful();
+
+    \Illuminate\Support\Sleep::assertSleptTimes(0);
+
+    expect($this->getTestingDisk()->files())->toHaveCount(4);
+});
+
 it('remove tags', function () {
     // Arrange
     \Illuminate\Support\Sleep::fake();
