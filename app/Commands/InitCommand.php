@@ -8,6 +8,7 @@ use App\Formatters\StudlyCaseFormatter;
 use App\Formatters\TitleFormatter;
 use App\Formatters\UpperCaseFormatter;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
@@ -31,6 +32,7 @@ class InitCommand extends Command implements PromptsForMissingInput
                             { author-email : The author\'s email }
                             { description : The plugin description }
                             { --p|path= : Path to the plugin directory }
+                            { --exclude=* : Paths to exclude }
                             { --d|dont-delete-cli : Prevent deleting the CLI }';
 
     protected $description = 'Initialize the plugin development package';
@@ -39,6 +41,12 @@ class InitCommand extends Command implements PromptsForMissingInput
         'build',
         'vendor',
         'node_modules',
+    ];
+
+    protected array $excludedFiles = [
+        'phpunit.xml',
+        'package.json',
+        'testbench.yaml',
     ];
 
     public function __construct()
@@ -145,6 +153,8 @@ class InitCommand extends Command implements PromptsForMissingInput
         return (new Finder)
             ->in($this->getPackageDirectories())
             ->files()
+            ->notPath($this->getExcludedPaths())
+            ->ignoreDotFiles(true)
             ->exclude($this->getExcludedDirectories());
     }
 
@@ -158,6 +168,13 @@ class InitCommand extends Command implements PromptsForMissingInput
     protected function getExcludedDirectories(): array
     {
         return $this->excludedDirectories;
+    }
+
+    protected function getExcludedPaths(): array
+    {
+        $excludedPaths = Arr::wrap($this->option('exclude'));
+
+        return array_merge($this->excludedFiles, $excludedPaths);
     }
 
     protected function initFile(SplFileInfo $file): void
