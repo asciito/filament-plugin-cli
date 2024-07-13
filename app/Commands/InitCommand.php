@@ -192,7 +192,7 @@ class InitCommand extends Command implements PromptsForMissingInput
             ->replaceInFile($file)
             ->renameFile($file);
 
-        Sleep::usleep(50_000_000);
+        Sleep::usleep(500_000);
     }
 
     protected function renameFile(SplFileInfo $file): static
