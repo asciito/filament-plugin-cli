@@ -67,7 +67,7 @@ it('replace placeholders', function () {
         ->expectsQuestion('What\'s the Author\'s name', 'Ayax Córdova')
         ->expectsQuestion('What\'s the Author\'s e-mail', 'example@mail.com')
         ->expectsQuestion('Describe your plugin', 'Lorem ipsum dolor it sa, des quan tu mit lamp')
-        ->expectsOutput(<<<'CONFIG'
+        ->expectsOutputToContain(<<<'CONFIG'
         Author:        Ayax Córdova
         Author E-mail: example@mail.com
         Vendor:        asciito
