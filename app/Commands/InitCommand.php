@@ -38,15 +38,19 @@ class InitCommand extends Command implements PromptsForMissingInput
     protected $description = 'Initialize the plugin development package';
 
     protected array $excludedDirectories = [
+        '.git',
+        '.idea',
         'build',
         'vendor',
         'node_modules',
     ];
 
     protected array $excludedFiles = [
+        'plugin',
         'phpunit.xml',
         'package.json',
         'testbench.yaml',
+        '.github/**/*.yml',
     ];
 
     public function __construct()
@@ -154,7 +158,7 @@ class InitCommand extends Command implements PromptsForMissingInput
             ->in($this->getPackageDirectories())
             ->files()
             ->notPath($this->getExcludedPaths())
-            ->ignoreDotFiles(true)
+            ->ignoreDotFiles(false)
             ->exclude($this->getExcludedDirectories());
     }
 
