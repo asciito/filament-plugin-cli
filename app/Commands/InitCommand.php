@@ -38,15 +38,19 @@ class InitCommand extends Command implements PromptsForMissingInput
     protected $description = 'Initialize the plugin development package';
 
     protected array $excludedDirectories = [
+        '.git',
+        '.idea',
         'build',
         'vendor',
         'node_modules',
     ];
 
     protected array $excludedFiles = [
+        'plugin',
         'phpunit.xml',
         'package.json',
         'testbench.yaml',
+        '.github/**/*.yml',
     ];
 
     public function __construct()
@@ -63,6 +67,10 @@ class InitCommand extends Command implements PromptsForMissingInput
         $files = $this->getFiles();
 
         foreach ($files as $file) {
+            $this->info('USING CONFIGURATION:');
+
+            $this->printConfiguration();
+
             spin(
                 fn () => $this->initFile($file),
                 "Replacing placeholders in file [{$file->getBasename()}]",
@@ -99,11 +107,11 @@ class InitCommand extends Command implements PromptsForMissingInput
     protected function printConfiguration(): void
     {
         $this->line(<<<CONFIG
-        Author:        {$this->getAuthor()}
-        Author E-mail: {$this->getAuthorEmail()}
-        Vendor:        {$this->getVendor()}
-        Package:       {$this->getPackage()}
-        Description:   {$this->getPluginDescription()}
+        Author:        <fg=yellow>{$this->getAuthor()}</>
+        Author E-mail: <fg=yellow>{$this->getAuthorEmail()}</>
+        Vendor:        <fg=yellow>{$this->getVendor()}</>
+        Package:       <fg=yellow>{$this->getPackage()}</>
+        Description:   <fg=yellow>{$this->getPluginDescription()}</>
         CONFIG);
     }
 
@@ -151,10 +159,11 @@ class InitCommand extends Command implements PromptsForMissingInput
     protected function getFiles(): Finder
     {
         return (new Finder)
+            ->sortByName()
             ->in($this->getPackageDirectories())
             ->files()
             ->notPath($this->getExcludedPaths())
-            ->ignoreDotFiles(true)
+            ->ignoreDotFiles(false)
             ->exclude($this->getExcludedDirectories());
     }
 
