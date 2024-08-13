@@ -21,6 +21,10 @@
 
 ------
 
+# Do not use this project, is archived now
+
+Due to unnecessary complexity, I'm afraid the project needs to be archived
+
 ## Documentation
 
 Inside your newly cloned/downloaded package from [asciito/filament-plugin](https://github.com/asciito/filament-plugin), run the following command:
